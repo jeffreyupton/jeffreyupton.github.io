@@ -57,7 +57,7 @@ window.onload = async () => {
         case "Mozilla Firefox":
             errorMessage = `
            <div class="title-bar">
-               <img src="/images/firfox.jpg" class="my-icon" alt="Firefox Icon">
+               <img src="https://jeffreyupton.github.io/images/firfox.jpg" class="my-icon" alt="Firefox Icon">
                <span class="title-class-Mozilla-Firefox ">Firefox Update Required</span>
                 <button class="my-custom-close" onclick="Swal.close()">&times;</button>
             </div>
